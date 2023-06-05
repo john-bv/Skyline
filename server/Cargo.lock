@@ -3,28 +3,39 @@
 version = 3
 
 [[package]]
+name = "aho-corasick"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "67fc08ce920c31afb70f013dcce1bfc3a3195de6a228474e45e1f145b36f8d04"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
-name = "bin_macro"
-version = "0.1.0"
-source = "git+https://github.com/NetrexMC/BinaryUtil.git?branch=rewrite#fdf6327d07fb335fce607f5c8c08de1c6a491799"
+name = "binary-util"
+version = "0.3.3-rc.1"
+source = "git+https://github.com/NetrexMC/binary-utils.git?branch=master#10bc7ec9b510ddf8e939c650a7518d8abfbd1462"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "binary-util-derive",
+ "bytes",
 ]
 
 [[package]]
-name = "binary_utils"
-version = "0.2.3"
-source = "git+https://github.com/NetrexMC/BinaryUtil.git?branch=rewrite#fdf6327d07fb335fce607f5c8c08de1c6a491799"
+name = "binary-util-derive"
+version = "0.1.1-rc.1"
+source = "git+https://github.com/NetrexMC/binary-utils.git?branch=master#10bc7ec9b510ddf8e939c650a7518d8abfbd1462"
 dependencies = [
- "bin_macro",
- "bytes",
+ "lazy_static",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "syn",
 ]
 
 [[package]]
@@ -32,6 +43,18 @@ name = "bytes"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89b2fd2a0dcf38d7971e2194b6b6eebab45ae01067456a7fd93d5547a61b70be"
+
+[[package]]
+name = "lazy_static"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
+
+[[package]]
+name = "memchr"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "pin-project-lite"
@@ -58,18 +81,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "regex"
+version = "1.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af83e617f331cc6ae2da5443c602dfa5af81e517212d9d611a5b3ba1777b5370"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-syntax"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5996294f19bd3aae0453a862ad728f60e6600695733dd5df01da90c54363a3c"
+
+[[package]]
 name = "server"
 version = "0.1.0"
 dependencies = [
- "binary_utils",
+ "binary-util",
  "tokio",
 ]
 
 [[package]]
 name = "syn"
-version = "1.0.109"
+version = "2.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237"
+checksum = "a34fcf3e8b60f57e6a14301a2e916d323af98b0ea63c599441eec8558660c822"
 dependencies = [
  "proc-macro2",
  "quote",
