@@ -19,8 +19,8 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "binary-util"
-version = "0.3.3-rc.1"
-source = "git+https://github.com/NetrexMC/binary-utils.git?branch=master#10bc7ec9b510ddf8e939c650a7518d8abfbd1462"
+version = "0.3.4"
+source = "git+https://github.com/NetrexMC/binary-utils.git?branch=master#74ea2b229b59e4ec088847cdb1301c2ace6e24b7"
 dependencies = [
  "binary-util-derive",
  "bytes",
@@ -28,8 +28,8 @@ dependencies = [
 
 [[package]]
 name = "binary-util-derive"
-version = "0.1.1-rc.1"
-source = "git+https://github.com/NetrexMC/binary-utils.git?branch=master#10bc7ec9b510ddf8e939c650a7518d8abfbd1462"
+version = "0.1.1"
+source = "git+https://github.com/NetrexMC/binary-utils.git?branch=master#74ea2b229b59e4ec088847cdb1301c2ace6e24b7"
 dependencies = [
  "lazy_static",
  "proc-macro2",

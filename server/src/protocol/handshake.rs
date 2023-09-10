@@ -11,8 +11,9 @@ pub struct LoginPacket {
     pub id: String,
     /// The token of the Session, this is issued by the proxy for the client to use (security).
     /// If this is disabled, you can use the GUEST_UUID constant.
-    pub token: String
-    /// A unique 
+    pub token: String,
+    /// A unique list of identifiers that the client has. These can be used to identify the client.
+    pub identifiers: Vec<String>,
 }
 
 /// This packet can be sent by the server or by the client.
@@ -23,5 +24,14 @@ pub struct LoginPacket {
 /// wants to disconnect from the server.
 #[derive(BinaryIo)]
 pub struct Disconnect {
-    pub reason: String
+    pub reason: DisconnectReason
+}
+
+#[derive(BinaryIo)]
+#[repr(u8)]
+pub enum DisconnectReason {
+    InvalidToken,
+    InvalidName,
+    InvalidIdentifiers,
+    InvalidProtocol
 }
