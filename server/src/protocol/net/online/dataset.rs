@@ -9,9 +9,6 @@ use std::ops::BitAnd;
 use binary_util::BinaryIo;
 use binary_util::types::varu32;
 
-/// This is the "magic" or protocol identifier for the ZEQ protocol.
-pub const ZEQA_DISPATCH_HEADER: &[u8] = b"ZEQA_DISPATCH:1.0.0";
-
 /// Identifies the type of the dataset.
 #[derive(Debug, Clone, Copy, BinaryIo, PartialEq, Eq, Hash)]
 #[repr(u8)]
@@ -39,8 +36,8 @@ impl BitAnd for DataBits {
 #[derive(Debug, Clone, BinaryIo)]
 pub struct SplitInfo {
     pub id: u16,
-    pub total: u16,
-    pub index: u16
+    pub total: u32,
+    pub index: u32
 }
 
 /// The information to order packets correctly.
@@ -48,7 +45,7 @@ pub struct SplitInfo {
 #[derive(Debug, Clone, BinaryIo)]
 pub struct OrderInfo {
     pub id: u16,
-    pub index: u16
+    pub index: u32
 }
 
 #[derive(Debug, Clone, BinaryIo)]
@@ -60,9 +57,15 @@ pub struct DataSet {
     /// If the flags contain the `Split` flag, this will contain the information
     #[satisfy((self.flags & DataBits::Split) != 0)]
     pub split: Option<SplitInfo>,
-    /// If the flags contain the `Ordered`, the order information will be here.
+    /// If the flags contain `Ordered`, the order information will be here.
     #[satisfy((self.flags & DataBits::Ordered) != 0)]
     pub order: Option<OrderInfo>,
     /// the payload, this is prefixed by a varu32 length by binary_util.
     pub payload: Vec<u8>
+}
+
+impl DataSet {
+    pub fn is_split(&self) -> bool {
+        self.split.is_some()
+    }
 }
