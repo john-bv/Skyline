@@ -1,6 +1,7 @@
 use binary_util::{BinaryIo, types::varu32};
 
 pub mod dataset;
+pub mod ack;
 
 /// Online packets have differing ids from offline ones!
 #[derive(BinaryIo)]
@@ -13,7 +14,9 @@ pub enum OnlinePackets {
     Pong(Pong),
     /// This is a generic packet that is used to send large data to the client.
     /// Think of this like the "gamewrapper" packet for RakNet.
-    DataSet(dataset::DataSet)
+    DataSet(dataset::DataSet),
+    /// Used to recover lost packets.
+    Ack(ack::AckVariant),
 }
 
 /// This is a generic ping packet.

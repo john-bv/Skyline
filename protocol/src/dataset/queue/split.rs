@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::protocol::net::{online::dataset::{DataSet, SplitInfo, DataBits}, MAX_PROTO_OVERHEAD};
+use crate::net::{online::dataset::{DataSet, SplitInfo, DataBits}, MAX_PROTO_OVERHEAD};
 
 /// A reliable split packet queue.
 /// This struct will handle splitting packets into multiple packets, as well as reassembling them.

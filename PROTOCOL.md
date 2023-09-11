@@ -1,6 +1,6 @@
 ## Protocol
 
-This is the protocol specification for `SysComm-v0.0.1`.
+This is the protocol specification for `MAgent-v0.0.1`.
 
 ### Handshake
 

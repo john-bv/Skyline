@@ -1,12 +1,12 @@
 // newer
 <?php
 
-use zeqa\dispatcher\Dispatcher;
-use zeqa\dispatcher\Client;
-use zeqa\dispatcher\api\ApiLayer;
-use zeqa\dispatcher\api\ApiPacket;
-use zeqa\dispatcher\channel\Channel;
-use zeqa\dispatcher\channel\ChannelPermission;
+use skyline\Dispatcher;
+use skyline\Client;
+use skyline\api\ApiLayer;
+use skyline\api\ApiPacket;
+use skyline\channel\Channel;
+use skyline\channel\ChannelPermission;
 
 // create a new client
 $client = new Client("NAME", [ "auth" => "TOKEN" ]);
