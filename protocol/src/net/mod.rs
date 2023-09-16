@@ -10,6 +10,7 @@ pub const MAX_PROTO_OVERHEAD: u16 = 20 + 8 + 4 + 25;
 /// This is protocol designed as the bare minimum for communication
 /// It does not contain the actual Skyline binary api implementation
 pub mod online;
+pub mod skyline;
 /// Protocol designed to communicate with clients that are not connected
 /// to the server.
 pub mod offline;

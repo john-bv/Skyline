@@ -93,3 +93,14 @@ $db->send(DbPacket::query("SELECT * FROM `users` WHERE `username` = ?", ["Bavfal
         $packet->getPayload();
     }
 });
+
+
+class MySkylinePacket {
+    public string $some;
+    public string $data;
+
+    public function __construct(string $some, string $data) {
+        $this->some = $some;
+        $this->data = $data;
+    }
+}
