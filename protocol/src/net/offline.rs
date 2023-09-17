@@ -1,26 +1,26 @@
 use binary_util::{BinaryIo, interfaces::{Writer, Reader}};
 
 /// This is the "magic" or protocol identifier for the ZEQ protocol.
-pub const ZEQA_DISPATCH_HEADER: &[u8] = b"ZEQA";
+pub const SKYLINE_HEADER: &[u8] = b"SKYLINE_1.0.0";
 
 /// This is the header that is sent by the server to the client.
-pub struct ZeqaDispatchHeader {}
+pub struct SkylineHeader {}
 
-impl Writer for ZeqaDispatchHeader {
+impl Writer for SkylineHeader {
     fn write(&self, buf: &mut binary_util::ByteWriter) -> Result<(), std::io::Error> {
-        buf.write(ZEQA_DISPATCH_HEADER)?;
+        buf.write(SKYLINE_HEADER)?;
         Ok(())
     }
 }
 
-impl Reader<ZeqaDispatchHeader> for ZeqaDispatchHeader {
-    fn read(buf: &mut binary_util::ByteReader) -> Result<ZeqaDispatchHeader, std::io::Error> {
+impl Reader<SkylineHeader> for SkylineHeader {
+    fn read(buf: &mut binary_util::ByteReader) -> Result<SkylineHeader, std::io::Error> {
         let mut header = [0u8; 16];
         buf.read(&mut header)?;
-        if header != *ZEQA_DISPATCH_HEADER {
+        if header != *SKYLINE_HEADER {
             return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "invalid header"));
         }
-        Ok(ZeqaDispatchHeader {})
+        Ok(SkylineHeader {})
     }
 }
 
@@ -65,7 +65,7 @@ pub struct Pong {
 /// This is the first packet sent by the client to the server.
 #[derive(BinaryIo)]
 pub struct ConnectRequest {
-    pub header: ZeqaDispatchHeader,
+    pub header: SkylineHeader,
     /// The mtu you want to use as the client.
     pub mtu: u16,
     /// The current epoch in seconds on the client.
@@ -77,7 +77,7 @@ pub struct ConnectRequest {
 /// to be established.
 #[derive(BinaryIo)]
 pub struct ConnectResponse {
-    pub header: ZeqaDispatchHeader,
+    pub header: SkylineHeader,
     /// The mtu the server will use for this client.
     pub mtu: u16,
     /// The current epoch in seconds on the server.
