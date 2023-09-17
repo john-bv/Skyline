@@ -1,7 +1,9 @@
 # Skyline
+A binary based message broker designed with an extensible protocol.
 
-A powerful message broker for Zeqa.
+Skyline is a powerful micro-service responsible for allowing multiple services and clients to communicate with each other.
 
-Skyline is a powerful micro-service responsible for allowing zeqa to function seemlessly.
+### Why Skyline?
+Skyline is light-weight, fast, and easy to integrate into your existing projects, without adding unnecessary bloat and complexity. Skyline is designed to function as a multi-purpose message broker, meaning each service can be configured to handle a specific task on specific channels.
 
-!> This code is still in development and is not ready for production use.
+Skyline also is designed to be clusterable, meaning you can run multiple instances of Skyline and have them communicate with each other. This allows you to scale your services horizontally, without having to worry about the complexity of load balancing.

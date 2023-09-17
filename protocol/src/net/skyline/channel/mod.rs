@@ -1,5 +1,7 @@
 use binary_util::BinaryIo;
 
+pub mod packets;
+
 /// A channel in Skyline is like an api "endpoint"
 /// It is a way to isolate packets from each other,
 /// while using a unique pub/sub system.
@@ -63,4 +65,27 @@ pub enum ChannelPermission {
     ListenSub,
     /// This permission allows you to listen to when people unsubscribe
     ListenUnsub
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd, BinaryIo)]
+#[repr(u8)]
+pub enum ChannelResponseStatus {
+    /// You should disconnect.
+    /// The server has already terminated the channel.
+    Disconnect,
+    /// The channel was not found.
+    /// This is typically sent when the channel is not found.
+    NotFound,
+    /// The channel was found, and you are allowed to connect
+    Ok
+}
+
+#[derive(Debug, Clone, BinaryIo)]
+#[repr(u8)]
+pub enum ChannelMessageType {
+    Broadcast,
+    Direct,
+    Propagate,
+    Queue,
+
 }

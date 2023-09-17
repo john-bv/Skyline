@@ -1,6 +1,6 @@
 use std::ops::BitAnd;
 
-/// This functions similarily to RakNet in that it is a reliable, ordered, and sequenced protocol.
+/// This functions similarly to RakNet in that it is a reliable, ordered, and sequenced protocol.
 /// However this is a more simplified, lightweight, and faster protocol.
 /// Each dataset contains the following:
 /// - A 1 byte header that contains the type of the dataset.

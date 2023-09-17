@@ -20,6 +20,10 @@ pub mod types;
 
 /// These are the packets strictly related to protocol handling.
 /// THIS DOES NOT INCLUDE PACKETS DESIGNED FOR THE CLIENT/SERVER.
+///
+/// <!-- docs -->
+/// # PacketWrapper
+/// This is the base packet for all packets.
 #[derive(BinaryIo)]
 #[repr(u8)]
 pub enum Packets {
