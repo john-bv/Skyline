@@ -60,3 +60,10 @@ impl std::fmt::Display for PossiblySocketAddr<'_> {
         }
     }
 }
+
+pub fn current_epoch() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+}

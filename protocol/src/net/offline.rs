@@ -24,6 +24,16 @@ impl Reader<SkylineHeader> for SkylineHeader {
     }
 }
 
+#[derive(BinaryIo)]
+#[repr(u8)]
+pub enum OfflinePackets {
+    Disconnect(Disconnect) = 1,
+    Ping(Ping),
+    Pong(Pong),
+    ConnectRequest(ConnectRequest),
+    ConnectResponse(ConnectResponse)
+}
+
 /// This packet can be sent by the server or by the client.
 /// Both represent the same thing, but the server will send this packet
 /// to the client when the client should gracefully disconnect.
@@ -83,5 +93,5 @@ pub struct ConnectResponse {
     /// The current epoch in seconds on the server.
     pub server_time: u64,
     /// The time sent in the previous packet (ConnectRequest).
-    pub client_time: u64,
+    pub client_time: u64
 }

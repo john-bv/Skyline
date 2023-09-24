@@ -1,5 +1,17 @@
 use binary_util::BinaryIo;
 
+pub trait Acknowledgeable {
+    type NackItem;
+
+    /// When an ac packet is recieved.
+    /// We should ack the queue.
+    fn ack(&mut self, _: Acknowledgement) {}
+
+    fn nack(&mut self, _: Acknowledgement) -> Vec<Self::NackItem> {
+        todo!("implement nack")
+    }
+}
+
 #[derive(BinaryIo)]
 #[repr(u8)]
 pub enum AckVariant {
