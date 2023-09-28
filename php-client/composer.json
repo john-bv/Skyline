@@ -1,0 +1,18 @@
+{
+    "name": "johnvbg/skyline",
+    "description": "a powerful micro-service",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Johnvbg\\Skyline\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "john-bv",
+            "email": "olybear9@gmail.com"
+        }
+    ],
+    "require": {}
+}

@@ -32,7 +32,7 @@ pub struct RecvQueue {
     nack: HashSet<u32>,
     /// Packets that we have recieved.
     window: Window,
-    // reliable_window: Window,
+    reliable_window: Window,
     /// These are packets that need to be processed and have been fully extracted.
     queue: Vec<Vec<u8>>,
 }
@@ -45,7 +45,7 @@ impl RecvQueue {
             ack: HashSet::new(),
             nack: HashSet::new(),
             window: Window::new(),
-            // reliable_window: Window::new(),
+            reliable_window: Window::new(),
             queue: Vec::new(),
         }
     }
@@ -72,6 +72,11 @@ impl RecvQueue {
     }
 
     fn process_data_set(&mut self, data_set: &DataSet) -> Result<(), RecvQueueError> {
+        if let Some(ref seq) = data_set.reliable_seq {
+            if !self.reliable_window.insert(seq.0) {
+                return Err(RecvQueueError::OldReliableSequence);
+            }
+        }
         if let Some(ref split) = data_set.split {
             if split.total > MAX_SPLIT_SIZE.into() {
                 return Err(RecvQueueError::SplitSizeTooLarge);
@@ -92,26 +97,23 @@ impl RecvQueue {
             }
         }
 
-        match data_set.flags {
-            DataBits::Ordered => {
-                if let Some(ref order_info) = data_set.order {
-                    let channel = self
-                        .order_q
-                        .entry(order_info.id)
-                        .or_insert_with(|| OrdQueue::new());
+        if data_set.flags.is_ordered() {
+            if let Some(ref order_info) = data_set.order {
+                let channel = self
+                    .order_q
+                    .entry(order_info.id)
+                    .or_insert_with(|| OrdQueue::new());
 
-                    if let Ok(_) = channel.insert(order_info.index, data_set.payload.clone()) {
-                        // we have the packets in order now,
-                        // we can push them to the queue.
-                        channel.flush().into_iter().for_each(|pk| {
-                            self.queue.push(pk);
-                        });
-                    }
+                if let Ok(_) = channel.insert(order_info.index, data_set.payload.clone().data) {
+                    // we have the packets in order now,
+                    // we can push them to the queue.
+                    channel.flush().into_iter().for_each(|pk| {
+                        self.queue.push(pk);
+                    });
                 }
             }
-            _ => {
-                self.queue.push(data_set.payload.clone());
-            }
+        } else {
+            self.queue.push(data_set.payload.clone().into());
         }
 
         Ok(())

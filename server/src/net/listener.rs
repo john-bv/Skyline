@@ -33,8 +33,8 @@ pub struct Listener {
     close_notifier: Arc<Notify>,
     socket: Arc<tokio::net::UdpSocket>,
     /// A mpsc channel that will send connections to the user and back to the listener.
-    rx_accept_channel: Receiver<()>,
-    tx_accept_channel: Sender<()>,
+    rx_accept_channel: Receiver<Conn>,
+    tx_accept_channel: Sender<Conn>,
     /// This is a hash_map of all connections, it contains a buffer channel
     /// that will send data to the connection.
     connections: ConnMap,
@@ -48,7 +48,7 @@ impl Listener {
         let addr = (address.into() as PossiblySocketAddr).to_socket_addr();
         let close_notifier = Arc::new(Notify::new());
 
-        let (tx_accept_channel, rx_accept_channel) = tokio::sync::mpsc::channel::<()>(5);
+        let (tx_accept_channel, rx_accept_channel) = tokio::sync::mpsc::channel::<Conn>(5);
         let connections = Arc::new(Mutex::new(HashMap::<SocketAddr, Conn>::new()));
 
         if let None = addr {
@@ -126,6 +126,8 @@ impl Listener {
                                 }
                                 OfflinePackets::ConnectRequest(request) => {
                                     // todo: Check if ip is banned.
+                                    // AFTER THIS PACKET IS SENT, THE CONNECTION
+                                    // IS HANDLED ENTIRELY BY THE CONN STRUCT.
                                     let mut sessions = connections.lock().await;
 
                                     if !sessions.contains_key(&addr) {

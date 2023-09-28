@@ -217,6 +217,7 @@ name = "protocol"
 version = "0.1.0"
 dependencies = [
  "binary-util",
+ "tokio",
 ]
 
 [[package]]

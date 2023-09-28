@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use crate::net::{online::dataset::{DataSet, SplitInfo, DataBits}, MAX_PROTO_OVERHEAD};
+use crate::net::{online::dataset::{DataSet, SplitInfo, DataBit}, MAX_PROTO_OVERHEAD};
 
 /// A reliable split packet queue.
 /// This struct will handle splitting packets into multiple packets, as well as reassembling them.
 pub struct SplitQueue {
     /// This is the current frag id number.
     /// If for whatever reason, this overlaps with an existing frame, it will be replaced.
-    id: u32,
+    id: u16,
 
     /// The current splits
     /// Hashmap represends the following values:
@@ -81,6 +81,23 @@ impl SplitQueue {
         return Err(SplitQueueError::NotSplit);
     }
 
+    pub fn split_insert(&mut self, buffer: &[u8], mtu: u16) -> Result<u16, SplitQueueError> {
+        self.id += self.id.wrapping_add(1);
+
+        let id = self.id;
+
+        if self.splits.contains_key(&id) {
+            self.splits.remove(&id);
+        }
+
+        if let Ok(packets) = Self::split(buffer, id as u16, mtu) {
+            self.splits.insert(id, (packets.len() as u32, packets));
+            return Ok(id);
+        }
+
+        return Err(SplitQueueError::NotRequired);
+    }
+
     /// Attempts to join all splits into a single buffer.
     /// This will fail if there are missing indices.
     pub fn join(&mut self, id: u16) -> Result<Vec<u8>, SplitQueueError> {
@@ -94,7 +111,7 @@ impl SplitQueue {
                 let mut buf = Vec::<u8>::new();
 
                 for split in splits.iter() {
-                    buf.extend_from_slice(&split.payload);
+                    buf.extend_from_slice(&split.payload.data);
                 }
 
                 self.splits.remove(&id);
@@ -121,15 +138,16 @@ impl SplitQueue {
 
             for buf in splits.iter() {
                 let set = DataSet {
-                    flags: DataBits::Split,
+                    flags: DataBit::new().with_split(),
                     seq: 0.into(),
                     split: Some(SplitInfo {
                         id,
                         total: splits.len() as u32,
                         index
                     }),
+                    reliable_seq: None,
                     order: None,
-                    payload: buf.clone()
+                    payload: buf.clone().into()
                 };
 
                 sets.push(set);
