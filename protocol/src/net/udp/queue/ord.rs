@@ -4,17 +4,17 @@ use std::collections::BTreeMap;
 #[derive(Debug, Clone)]
 pub struct OrdQueue<Item: Clone + std::fmt::Debug> {
     pub queue: BTreeMap<u32, Item>,
-    pub window: (u32, u32)
+    pub window: (u32, u32),
 }
 
 impl<Item> OrdQueue<Item>
 where
-    Item: Clone + std::fmt::Debug
+    Item: Clone + std::fmt::Debug,
 {
     pub fn new() -> Self {
         Self {
             queue: BTreeMap::new(),
-            window: (0, 0)
+            window: (0, 0),
         }
     }
 
@@ -27,13 +27,13 @@ where
         if index < self.window.0 {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::Other,
-                "Index is out of bounds"
+                "Index is out of bounds",
             ));
         }
         if self.queue.contains_key(&index) {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::Other,
-                "Index already exists"
+                "Index already exists",
             ));
         }
 

@@ -1,15 +1,16 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    net::online::{
+    net::udp::proto::online::{
         ack::{Acknowledgeable, Acknowledgement},
-        dataset::{DataBits, DataSet},
+        dataset::{DataBits, DataSet, Datagram},
     },
     MAX_SPLIT_SIZE,
 };
 
 use super::{ord::OrdQueue, split::SplitQueue, window::Window};
 
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum RecvQueueError {
     /// This an old sequence
     OldSequence,
@@ -50,23 +51,29 @@ impl RecvQueue {
         }
     }
 
-    pub fn insert(&mut self, data_set: DataSet) -> Result<(), RecvQueueError> {
-        if !self.window.insert(data_set.seq.into()) {
+    pub fn insert(&mut self, datagram: Datagram) -> Result<(), RecvQueueError> {
+        if !self.window.insert(datagram.sequence.into()) {
             return Err(RecvQueueError::OldSequence);
         }
 
-        if self.window.window().start < data_set.seq.into() {
+        if self.window.window().start < datagram.sequence.into() {
             // this is a new packet, we might not have previous packets!
-            (self.window.window().start..(data_set.seq.0))
+            (self.window.window().start..(datagram.sequence))
                 .into_iter()
                 .for_each(|seq| {
                     self.nack.insert(seq);
                 });
         }
 
-        self.ack.insert(data_set.seq.into());
+        self.ack.insert(datagram.sequence);
 
-        self.process_data_set(&data_set)?;
+        // self.process_data_set(&data_set)?;
+        // loop through the data set and process it.
+        for set in datagram.sets {
+            if let Err(e) = self.process_data_set(&set) {
+                println!("[RECQ] Error processing set: {:?}", e);
+            }
+        }
 
         Ok(())
     }
@@ -118,6 +125,23 @@ impl RecvQueue {
 
         Ok(())
     }
+
+    pub fn flush(&mut self) -> Vec<Vec<u8>> {
+        // todo: Determine whether this is better than the contrary
+        // todo: EG using an interator:
+        // todo: self.queue.drain(..).collect()
+        let mut queue = Vec::new();
+        std::mem::swap(&mut queue, &mut self.queue);
+        queue
+    }
+
+    pub fn ack_flush(&mut self) -> Vec<u32> {
+        self.ack.drain().collect()
+    }
+
+    pub fn nack_queue(&mut self) -> Vec<u32> {
+        self.nack.iter().map(|x| *x).collect::<Vec<u32>>()
+    }
 }
 
 impl Acknowledgeable for RecvQueue {
@@ -125,7 +149,13 @@ impl Acknowledgeable for RecvQueue {
 
     fn ack(&mut self, ack: Acknowledgement) {
         ack.seqs.into_iter().for_each(|seq| {
-            self.ack.remove(&seq);
+            self.nack.remove(&seq);
         });
+    }
+
+    // we dont nack because if we recieve a Nack, we will just resend the packet
+    // from the send queue.
+    fn nack(&mut self, _: Acknowledgement) -> Vec<()> {
+        return vec![];
     }
 }

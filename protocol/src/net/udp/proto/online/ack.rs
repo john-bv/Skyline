@@ -1,5 +1,4 @@
 use binary_util::BinaryIo;
-
 pub trait Acknowledgeable {
     type NackItem;
 
@@ -29,14 +28,14 @@ pub struct Acknowledgement {
     pub seqs: Vec<u32>,
     /// If this is true,
     /// it is a list of acknowledgements to sent split packets.
-    pub splits: Option<Vec<u32>>
+    pub splits: Option<Vec<u32>>,
 }
 
 impl Acknowledgement {
     pub fn new() -> Self {
         Self {
             seqs: Vec::new(),
-            splits: None
+            splits: None,
         }
     }
 

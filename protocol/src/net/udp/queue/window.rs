@@ -2,11 +2,10 @@ use std::collections::HashMap;
 
 use crate::util::current_epoch;
 
-
 pub struct Window {
     window: (u32, u32),
     size: u32,
-    recv: HashMap<u32, u64>
+    recv: HashMap<u32, u64>,
 }
 
 impl Window {
@@ -14,7 +13,7 @@ impl Window {
         Self {
             window: (0, 2048),
             size: 2048,
-            recv: HashMap::new()
+            recv: HashMap::new(),
         }
     }
 

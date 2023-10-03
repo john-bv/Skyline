@@ -7,11 +7,16 @@ use super::{
     split::{SplitQueue, SplitQueueError},
 };
 use crate::{
-    net::{
-        online::dataset::{DataBit, DataSet, OrderInfo, SplitInfo, Datagram},
-        MAX_PROTO_OVERHEAD,
+    net::udp::proto::{
+        online::{
+            ack::Acknowledgeable,
+            dataset::{DataBit, DataSet, Datagram, OrderInfo, SplitInfo},
+            OnlinePackets,
+        },
+        Packets, MAX_PROTO_OVERHEAD,
     },
-    queue::{NetQueue, ord}, util::SafeGenerator,
+    net::udp::queue::{ord, NetQueue},
+    util::SafeGenerator,
 };
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -78,6 +83,22 @@ impl SendQueue {
         }
     }
 
+    pub async fn insert_writable(
+        &mut self,
+        any_writer: impl Writer,
+        priority: SendPriority,
+        channel: Option<u16>,
+    ) -> Result<(), SendQueueError> {
+        let bytes = match any_writer.write_to_bytes() {
+            Ok(b) => b,
+            Err(_) => {
+                return Err(SendQueueError::SendError);
+            }
+        };
+
+        self.insert(bytes.as_slice(), priority, channel).await
+    }
+
     pub async fn insert(
         &mut self,
         packet: &[u8],
@@ -106,22 +127,16 @@ impl SendQueue {
 
         if packet.len() > (self.mtu_size + MAX_PROTO_OVERHEAD) as usize {
             // we need to split this packet
-            let mut datagram = Datagram::new()
-                .with_sequence(self.seq.next().into());
+            let mut datagram = Datagram::new().with_sequence(self.seq.next().into());
 
             let split_insert = self.splitq.split_insert(&packet, self.mtu_size);
             if let Ok(split_id) = split_insert {
                 let (_, parts) = self.splitq.get_mut(&split_id).unwrap();
-                let (ord_seq, ord_idx) = self
-                    .ord_chans
-                    .entry(channel.unwrap_or(0))
-                    .or_insert((0, 0));
+                let (ord_seq, ord_idx) =
+                    self.ord_chans.entry(channel.unwrap_or(0)).or_insert((0, 0));
 
                 for part in parts.iter_mut() {
-                    part.flags = DataBit::new()
-                        .with_split()
-                        .with_reliable()
-                        .with_ordered();
+                    part.flags = DataBit::new().with_split().with_reliable().with_ordered();
 
                     part.seq = self.seq.next().into();
                     part.reliable_seq = Some(self.reliable_seq.next().into());
@@ -147,7 +162,7 @@ impl SendQueue {
                 return Ok(());
             }
 
-            return Err(SendQueueError::SplitError(split_insert.unwrap_err()))
+            return Err(SendQueueError::SplitError(split_insert.unwrap_err()));
         } else {
             // this packet isn't split, we can send it immediately (if defined by the priority)
             let mut set = DataSet::new().with_payload(packet.to_vec());
@@ -156,26 +171,26 @@ impl SendQueue {
                 SendPriority::High => {
                     set.flags = set.flags.with_reliable();
                     set.reliable_seq = Some(self.reliable_seq.next().into());
-                    self.queue.entry(SendPriority::High)
+                    self.queue
+                        .entry(SendPriority::High)
                         .or_insert(Vec::new())
                         .push(set);
                     Ok(())
-                },
+                }
                 SendPriority::Medium => {
                     set.flags = set.flags.with_reliable();
                     set.reliable_seq = Some(self.reliable_seq.next().into());
-                    self.queue.entry(SendPriority::Medium)
+                    self.queue
+                        .entry(SendPriority::Medium)
                         .or_insert(Vec::new())
                         .push(set);
                     Ok(())
-                },
+                }
                 SendPriority::Immediate => {
                     self.send_set(set).await?;
                     Ok(())
-                },
-                _ => {
-                    Err(SendQueueError::PacketTooLarge)
                 }
+                _ => Err(SendQueueError::PacketTooLarge),
             }
         }
     }
@@ -193,7 +208,9 @@ impl SendQueue {
             .with_sequence(self.seq.next().into())
             .with_set(set);
 
-        if let Ok(buf) = datagram.write_to_bytes() {
+        let packet = Packets::OnlinePacket(OnlinePackets::Datagram(datagram));
+
+        if let Ok(buf) = packet.write_to_bytes() {
             return self.send_raw(buf.as_slice()).await;
         }
 
@@ -201,6 +218,7 @@ impl SendQueue {
     }
 
     async fn send_datagram(&mut self, datagram: Datagram) -> Result<(), SendQueueError> {
+        let datagram = Packets::OnlinePacket(OnlinePackets::Datagram(datagram));
         if let Ok(buf) = datagram.write_to_bytes() {
             return self.send_raw(buf.as_slice()).await;
         } else {
@@ -208,7 +226,7 @@ impl SendQueue {
         }
     }
 
-    pub(crate) async fn send_raw(&mut self, packet: &[u8]) -> Result<(), SendQueueError> {
+    pub async fn send_raw(&mut self, packet: &[u8]) -> Result<(), SendQueueError> {
         if let Err(e) = self.socket.send_to(packet, &self.address).await {
             return Err(SendQueueError::SendError);
         } else {
@@ -218,13 +236,25 @@ impl SendQueue {
 
     pub async fn update(&mut self) {
         // high priority packets sent FIRST
-        for pk in self.queue.get_mut(&SendPriority::High).unwrap().drain(..).collect::<Vec<DataSet>>() {
+        for pk in self
+            .queue
+            .get_mut(&SendPriority::High)
+            .unwrap()
+            .drain(..)
+            .collect::<Vec<DataSet>>()
+        {
             if let Err(_) = self.send_set(pk).await {
                 println!("failed to send high priority packet");
             }
         }
         // medium priority packets sent SECOND
-        for pk in self.queue.get_mut(&SendPriority::Medium).unwrap().drain(..).collect::<Vec<DataSet>>() {
+        for pk in self
+            .queue
+            .get_mut(&SendPriority::Medium)
+            .unwrap()
+            .drain(..)
+            .collect::<Vec<DataSet>>()
+        {
             if let Err(_) = self.send_set(pk).await {
                 println!("failed to send medium priority packet");
             }
@@ -236,5 +266,33 @@ impl SendQueue {
                 println!("failed to send ack packet");
             }
         }
+    }
+}
+
+impl Acknowledgeable for SendQueue {
+    type NackItem = Datagram;
+
+    fn ack(&mut self, ack: crate::net::udp::proto::online::ack::Acknowledgement) {
+        // we are ackowledging a packet!
+        // remove each item from the queue
+        ack.seqs.into_iter().for_each(|seq| {
+            if let Err(_) = self.ack.remove(seq) {};
+        });
+    }
+
+    fn nack(
+        &mut self,
+        nack: crate::net::udp::proto::online::ack::Acknowledgement,
+    ) -> Vec<Self::NackItem> {
+        nack.seqs
+            .into_iter()
+            .filter_map(|seq| {
+                if let Ok(v) = self.ack.get(seq) {
+                    Some(v.clone())
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 }

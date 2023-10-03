@@ -1,21 +1,20 @@
-use std::{
-    collections::HashMap,
-    net::SocketAddr,
-    sync::Arc,
-};
+use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 
-use tokio::sync::mpsc::{Receiver, Sender};
-use tokio::sync::Notify;
-use tokio::sync::Mutex;
 use tokio::net::UdpSocket;
+use tokio::sync::mpsc::{Receiver, Sender};
+use tokio::sync::Mutex;
+use tokio::sync::Notify;
 
-use binary_util::{interfaces::{Reader, Writer}, io::ByteReader};
+use binary_util::{
+    interfaces::{Reader, Writer},
+    io::ByteReader,
+};
 
 use super::conn::Conn;
 use crate::utils::current_epoch;
 use crate::utils::PossiblySocketAddr;
-use protocol::net::{offline::OfflinePackets, Packets};
-use protocol::net::offline::{Ping, Pong};
+use protocol::net::udp::proto::offline::{Ping, Pong};
+use protocol::net::udp::proto::{offline::OfflinePackets, Packets};
 
 pub(crate) type ConnMap = Arc<Mutex<HashMap<SocketAddr, Conn>>>;
 
@@ -153,7 +152,11 @@ impl Listener {
     }
 }
 
-async fn send_packet_to(socket: &Arc<UdpSocket>, to: SocketAddr, packet: Packets) -> std::io::Result<()> {
+async fn send_packet_to(
+    socket: &Arc<UdpSocket>,
+    to: SocketAddr,
+    packet: Packets,
+) -> std::io::Result<()> {
     if let Ok(b) = packet.write_to_bytes() {
         socket.send_to(&b.as_slice(), to).await?;
     }

@@ -18,5 +18,5 @@ pub enum LoginResponseCode {
     AccessGranted,
     /// The server allowed the session to connect,
     /// but the token was invalid and the session is in guest mode.
-    AccessLimited
+    AccessLimited,
 }

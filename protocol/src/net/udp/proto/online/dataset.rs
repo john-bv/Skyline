@@ -1,27 +1,24 @@
 use std::ops::BitAnd;
 
+use binary_util::interfaces::{Reader, Writer};
+use binary_util::types::varu32;
 /// This functions similarly to RakNet in that it is a reliable, ordered, and sequenced protocol.
 /// However this is a more simplified, lightweight, and faster protocol.
 /// Each dataset contains the following:
 /// - A 1 byte header that contains the type of the dataset.
 /// - A variable length payload that contains the data for the dataset.
-
 use binary_util::BinaryIo;
-use binary_util::interfaces::{Reader, Writer};
-use binary_util::types::varu32;
 
-use crate::types::sized_vec::SizedVec;
+use crate::net::udp::types::sized_vec::SizedVec;
 
 #[derive(Debug, Clone)]
 pub struct DataBit {
-    bit: u8
+    bit: u8,
 }
 
 impl DataBit {
     pub fn new() -> Self {
-        Self {
-            bit: 0
-        }
+        Self { bit: 0 }
     }
 
     pub fn with_reliable(mut self) -> Self {
@@ -68,9 +65,7 @@ impl DataBit {
 impl Reader<DataBit> for DataBit {
     fn read(buf: &mut binary_util::ByteReader) -> Result<DataBit, std::io::Error> {
         let bit = buf.read_u8()?;
-        Ok(Self {
-            bit
-        })
+        Ok(Self { bit })
     }
 }
 
@@ -96,7 +91,7 @@ pub enum DataBits {
     Ordered = 0b0000_0100,
     /// The packet is unreliable.
     /// Default bit
-    Unreliable = 0b0000_1000
+    Unreliable = 0b0000_1000,
 }
 
 impl DataBits {
@@ -131,7 +126,7 @@ impl BitAnd for DataBits {
 pub struct SplitInfo {
     pub id: u16,
     pub total: u32,
-    pub index: u32
+    pub index: u32,
 }
 
 /// The information to order packets correctly.
@@ -140,14 +135,14 @@ pub struct SplitInfo {
 pub struct OrderInfo {
     pub id: u16,
     pub index: u32,
-    pub sequence: u32
+    pub sequence: u32,
 }
 
 /// A datagram is a collection of datasets.
 /// This is the main packet that is sent over the network.
 ///
 /// Visual representation:
-///
+///```md
 ///                  ┌──────────┐
 ///                  │ Datagram │
 ///                  └──────────┘
@@ -158,18 +153,18 @@ pub struct OrderInfo {
 /// ┌────┴────┐ ┌────┴┴───┐ ┌────┴┴───┐ ┌────┴────┐
 /// │   SET   │ │   SET   │ │   SET   │ │   SET   │
 /// └─────────┘ └─────────┘ └─────────┘ └─────────┘
-
+/// ```
 #[derive(Debug, Clone, BinaryIo)]
 pub struct Datagram {
     pub sequence: u32,
-    pub sets: Vec<DataSet>
+    pub sets: Vec<DataSet>,
 }
 
 impl Datagram {
     pub fn new() -> Self {
         Self {
             sequence: 0,
-            sets: Vec::new()
+            sets: Vec::new(),
         }
     }
 
@@ -209,7 +204,7 @@ pub struct DataSet {
     #[satisfy(self.flags.is_ordered())]
     pub order: Option<OrderInfo>,
     /// the payload, this is prefixed by a varu32 length by binary_util.
-    pub payload: SizedVec<u16, u8>
+    pub payload: SizedVec<u16, u8>,
 }
 
 impl DataSet {
@@ -220,7 +215,7 @@ impl DataSet {
             reliable_seq: None,
             split: None,
             order: None,
-            payload: SizedVec::new(0)
+            payload: SizedVec::new(0),
         }
     }
 
@@ -246,7 +241,7 @@ impl DataSet {
         self.order = Some(OrderInfo {
             id,
             index,
-            sequence: 0
+            sequence: 0,
         });
         self
     }

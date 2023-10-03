@@ -3,14 +3,14 @@ use binary_util::interfaces::{Reader, Writer};
 #[derive(Debug, Clone)]
 pub struct SizedVec<S, T> {
     pub len: S,
-    pub data: Vec<T>
+    pub data: Vec<T>,
 }
 
 /// S can only be u8, u16, u32, u64, u128
 impl<S, T> Writer for SizedVec<S, T>
 where
     S: Writer,
-    T: Writer
+    T: Writer,
 {
     fn write(&self, buf: &mut binary_util::ByteWriter) -> Result<(), std::io::Error> {
         self.len.write(buf)?;
@@ -23,18 +23,19 @@ where
 
 impl<S, T> SizedVec<S, T>
 where
-    S: Clone {
+    S: Clone,
+{
     pub fn new(len: S) -> Self {
         Self {
             len,
-            data: Vec::new()
+            data: Vec::new(),
         }
     }
 
     pub fn with_capacity(len: S, capacity: usize) -> Self {
         Self {
             len,
-            data: Vec::with_capacity(capacity)
+            data: Vec::with_capacity(capacity),
         }
     }
 
@@ -117,7 +118,7 @@ macro_rules! impl_sized_vec_reader {
     };
 }
 
-impl_sized_vec_reader!{
+impl_sized_vec_reader! {
     u8, u16, u32, u64, u128,
     i8, i16, i32, i64, i128
 }

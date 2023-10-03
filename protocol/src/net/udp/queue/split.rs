@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::net::{online::dataset::{DataSet, SplitInfo, DataBit}, MAX_PROTO_OVERHEAD};
+use crate::net::udp::proto::{
+    online::dataset::{DataBit, DataSet, SplitInfo},
+    MAX_PROTO_OVERHEAD,
+};
 
 /// A reliable split packet queue.
 /// This struct will handle splitting packets into multiple packets, as well as reassembling them.
@@ -12,14 +15,14 @@ pub struct SplitQueue {
     /// The current splits
     /// Hashmap represends the following values:
     /// (size, Vec<DataSet>)
-    splits: HashMap<u16, (u32, Vec<DataSet>)>
+    splits: HashMap<u16, (u32, Vec<DataSet>)>,
 }
 
 impl SplitQueue {
     pub fn new() -> Self {
         Self {
             id: 0,
-            splits: HashMap::new()
+            splits: HashMap::new(),
         }
     }
 
@@ -105,7 +108,11 @@ impl SplitQueue {
             if *size == splits.len() as u32 {
                 // we have all the splits! Sort them.
                 splits.sort_by(|a, b| {
-                    a.split.as_ref().unwrap().index.cmp(&b.split.as_ref().unwrap().index)
+                    a.split
+                        .as_ref()
+                        .unwrap()
+                        .index
+                        .cmp(&b.split.as_ref().unwrap().index)
                 });
 
                 let mut buf = Vec::<u8>::new();
@@ -143,11 +150,11 @@ impl SplitQueue {
                     split: Some(SplitInfo {
                         id,
                         total: splits.len() as u32,
-                        index
+                        index,
                     }),
                     reliable_seq: None,
                     order: None,
-                    payload: buf.clone().into()
+                    payload: buf.clone().into(),
                 };
 
                 sets.push(set);

@@ -1,4 +1,7 @@
-use binary_util::{BinaryIo, interfaces::{Writer, Reader}};
+use binary_util::{
+    interfaces::{Reader, Writer},
+    BinaryIo,
+};
 
 /// This is the "magic" or protocol identifier for the ZEQ protocol.
 pub const SKYLINE_HEADER: &[u8] = b"SKYLINE_1.0.0";
@@ -18,7 +21,10 @@ impl Reader<SkylineHeader> for SkylineHeader {
         let mut header = [0u8; 16];
         buf.read(&mut header)?;
         if header != *SKYLINE_HEADER {
-            return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "invalid header"));
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "invalid header",
+            ));
         }
         Ok(SkylineHeader {})
     }
@@ -31,7 +37,7 @@ pub enum OfflinePackets {
     Ping(Ping),
     Pong(Pong),
     ConnectRequest(ConnectRequest),
-    ConnectResponse(ConnectResponse)
+    ConnectResponse(ConnectResponse),
 }
 
 /// This packet can be sent by the server or by the client.
@@ -42,7 +48,7 @@ pub enum OfflinePackets {
 /// wants to disconnect from the server.
 #[derive(BinaryIo)]
 pub struct Disconnect {
-    pub reason: DisconnectReason
+    pub reason: DisconnectReason,
 }
 
 #[derive(BinaryIo)]
@@ -51,7 +57,7 @@ pub enum DisconnectReason {
     InvalidToken,
     InvalidName,
     InvalidIdentifiers,
-    InvalidProtocol
+    InvalidProtocol,
 }
 
 /// An offline ping packet.
@@ -59,7 +65,7 @@ pub enum DisconnectReason {
 #[derive(BinaryIo)]
 pub struct Ping {
     /// The time the packet was sent.
-    pub send: u64
+    pub send: u64,
 }
 
 /// An offline pong packet.
@@ -68,7 +74,7 @@ pub struct Pong {
     /// Payload from the ping packet.
     pub send: u64,
     /// The time the packet was recieved by the peer.
-    pub recv: u64
+    pub recv: u64,
 }
 
 /// Attempts to establish a connection with the server.
@@ -93,5 +99,5 @@ pub struct ConnectResponse {
     /// The current epoch in seconds on the server.
     pub server_time: u64,
     /// The time sent in the previous packet (ConnectRequest).
-    pub client_time: u64
+    pub client_time: u64,
 }

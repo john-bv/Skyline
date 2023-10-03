@@ -1,5 +1,5 @@
-pub(crate) mod utils;
 pub mod net;
+pub(crate) mod utils;
 
 use binary_util::BinaryIo;
 

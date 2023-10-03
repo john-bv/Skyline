@@ -1,7 +1,7 @@
-use binary_util::{BinaryIo, types::varu32};
+use binary_util::{types::varu32, BinaryIo};
 
-pub mod dataset;
 pub mod ack;
+pub mod dataset;
 
 /// Online packets have differing ids from offline ones!
 #[derive(BinaryIo)]
@@ -14,7 +14,7 @@ pub enum OnlinePackets {
     Pong(Pong),
     /// This is a generic packet that is used to send large data to the client.
     /// Think of this like the "gamewrapper" packet for RakNet.
-    DataSet(dataset::DataSet),
+    Datagram(dataset::Datagram),
     /// Used to recover lost packets.
     Ack(ack::AckVariant),
 }
@@ -24,7 +24,7 @@ pub enum OnlinePackets {
 #[derive(BinaryIo)]
 pub struct Ping {
     /// The time the packet was sent.
-    pub send: u64
+    pub send: u64,
 }
 
 /// This is a generic pong packet.
@@ -33,10 +33,10 @@ pub struct Pong {
     /// Payload from the ping packet.
     pub send: u64,
     /// The time the packet was recieved by the peer.
-    pub recv: u64
+    pub recv: u64,
 }
 
-use super::types::LoginResponseCode;
+use crate::net::udp::proto::types::LoginResponseCode;
 
 /// This is the first packet sent by the client to the server.
 /// It contains the identifier the client would like to refer to itself as:
@@ -62,7 +62,7 @@ pub struct LoginResponse {
     /// The response from the server.
     pub response: LoginResponseCode,
     #[satisfy(self.response == LoginResponseCode::AccessGranted || self.response == LoginResponseCode::AccessLimited)]
-    pub meta: Option<LoginResponseMeta>
+    pub meta: Option<LoginResponseMeta>,
 }
 
 #[derive(BinaryIo)]
