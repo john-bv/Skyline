@@ -1,0 +1,21 @@
+use binary_util::BinaryIo;
+
+/// This is the skyline protocol
+/// This includes things like channels, api info etc...
+pub mod channel;
+pub mod connection;
+pub mod compression;
+
+/// The packets enum for Skyline
+#[derive(BinaryIo)]
+#[repr(u16)]
+pub enum SkylinePacket {
+    /// Compressed messages can be sent intermixed with other packets.
+    /// This is because some packets are extremely large.
+    /// If you send this packet, it is expected that the inner packet is a regular
+    /// SkylinePacket.
+    CompressedMessage(compression::CompressedMessage) = 0,
+    Disconnect(connection::Disconnect) = 1,
+    LoginPacket(connection::LoginPacket),
+    LoginResponse(connection::LoginResponse),
+}
