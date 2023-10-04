@@ -30,16 +30,6 @@ use tokio::{
 
 pub(crate) type ConnNetChan = Arc<Mutex<Receiver<Vec<u8>>>>;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-#[repr(u8)]
-pub enum ConnState {
-    Offline,
-    Connecting,
-    Connected,
-    TimingOut,
-    Disconnected,
-}
-
 #[derive(Debug, PartialEq)]
 #[repr(u8)]
 pub enum ProcessingStatus {

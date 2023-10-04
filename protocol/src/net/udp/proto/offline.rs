@@ -54,10 +54,7 @@ pub struct Disconnect {
 #[derive(BinaryIo)]
 #[repr(u8)]
 pub enum DisconnectReason {
-    InvalidToken,
-    InvalidName,
-    InvalidIdentifiers,
-    InvalidProtocol,
+    Unknown
 }
 
 /// An offline ping packet.

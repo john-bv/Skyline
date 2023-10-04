@@ -13,9 +13,10 @@ udp = []
 # This has the same tradeoffs as the `udp` feature, but is more stable (at the current time).
 tcp = []
 # This is the default feature set, this is stable but not as efficient.
-default = ["udp"]
+default = ["tcp"]
 
 [dependencies]
 tokio = { version = "1.27.0", features = ["full"] }
 protocol = { path = "../protocol" }
 binary-util = { git = "https://github.com/NetrexMC/binary-utils.git", branch = "master" }
+async-trait = "0.1.73"

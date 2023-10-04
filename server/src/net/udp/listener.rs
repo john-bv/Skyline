@@ -13,19 +13,13 @@ use binary_util::{
 use super::conn::Conn;
 use crate::utils::current_epoch;
 use crate::utils::PossiblySocketAddr;
+use crate::net::ListenerState;
 use protocol::net::udp::proto::offline::{Ping, Pong};
 use protocol::net::udp::proto::{offline::OfflinePackets, Packets};
 
 pub(crate) type ConnMap = Arc<Mutex<HashMap<SocketAddr, Conn>>>;
 
-#[derive(Debug, PartialEq)]
-pub enum ListenerState {
-    Ready,
-    Running,
-    Closed,
-}
-
-pub struct Listener {
+pub struct UdpListener {
     pub addr: SocketAddr,
     /// This is a notifier to kill the listener and all of it's tasks.
     /// When this is notified, the listener will close.
@@ -40,7 +34,7 @@ pub struct Listener {
     state: ListenerState,
 }
 
-impl Listener {
+impl UdpListener {
     pub async fn bind<I: for<'a> Into<PossiblySocketAddr<'a>>>(
         address: I,
     ) -> Result<Self, std::io::Error> {

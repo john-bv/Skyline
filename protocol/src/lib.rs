@@ -5,3 +5,7 @@ pub const MAX_ORDER_CHANNELS: u8 = 16;
 
 pub mod net;
 pub mod util;
+
+/// The binary protocol used to communicate with the server.
+/// THIS IS THE RAW PROTOCOL, DO NOT USE THIS DIRECTLY.
+pub mod skyline;

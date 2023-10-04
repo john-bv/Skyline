@@ -1,3 +1,4 @@
+pub mod peer;
 pub mod net;
 pub(crate) mod utils;
 
