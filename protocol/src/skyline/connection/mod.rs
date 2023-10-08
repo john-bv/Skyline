@@ -1,4 +1,4 @@
-use binary_util::{BinaryIo, types::varu32};
+use binary_util::{types::varu32, BinaryIo};
 
 /// This packet can be sent by the server or by the client.
 /// Both represent the same thing, but the server will send this packet
@@ -51,7 +51,6 @@ pub struct LoginResponseMeta {
     /// If EU-1 is already taken.
     pub identifiers: Vec<String>,
 }
-
 
 #[derive(Debug, Clone, Copy, BinaryIo, PartialEq, Eq, Hash)]
 #[repr(u8)]

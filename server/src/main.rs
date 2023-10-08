@@ -1,8 +1,6 @@
-pub mod peer;
 pub mod net;
+pub mod peer;
 pub(crate) mod utils;
-
-use binary_util::BinaryIo;
 
 #[tokio::main]
 async fn main() {

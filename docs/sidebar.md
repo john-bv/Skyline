@@ -1,2 +1,5 @@
 - [Protocol](protocol/README.md)
-- [Packets](protocol/PACKETS.md)
+  - [UDP](protocol/udp/README.md)
+    - [UDP Packets](protocol/udp/PACKETS.md)
+  - [TCP](protocol/tcp/README.md)
+- [Skyline](protocol/skyline/README.md)

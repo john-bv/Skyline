@@ -29,7 +29,7 @@ pub struct Channel {
     ///
     /// If this this false, you are assumed to know the endpoints for this channel.
     /// False is less overhead, but less user friendly.
-    pub has_api: bool
+    pub has_api: bool,
 }
 
 #[derive(Debug, Clone, BinaryIo)]
@@ -43,7 +43,7 @@ pub struct ChannelTopic {
     pub name: String,
     /// The permissions of the topic.
     /// This is used to restrict access to the topic.
-    pub permissions: ChannelPermission
+    pub permissions: ChannelPermission,
 }
 
 /// These are permissions that can be used to restrict access to channels.
@@ -64,7 +64,7 @@ pub enum ChannelPermission {
     /// This permission allows you to listen to when people subscribe
     ListenSub,
     /// This permission allows you to listen to when people unsubscribe
-    ListenUnsub
+    ListenUnsub,
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, BinaryIo)]
@@ -74,7 +74,7 @@ pub enum ChannelResponseStatus {
     /// The server has already terminated the channel.
     Disconnect,
     /// You are not allowed to join the channel.
-    /// This can happen if the 
+    /// This can happen if the
     /// The channel was not found.
     /// This is typically sent when the channel is not found.
     NotFound,
@@ -92,5 +92,4 @@ pub enum ChannelMessageType {
     Direct,
     Propagate,
     Queue,
-
 }

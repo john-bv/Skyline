@@ -11,9 +11,9 @@ use binary_util::{
 };
 
 use super::conn::Conn;
+use crate::net::ListenerState;
 use crate::utils::current_epoch;
 use crate::utils::PossiblySocketAddr;
-use crate::net::ListenerState;
 use protocol::net::udp::proto::offline::{Ping, Pong};
 use protocol::net::udp::proto::{offline::OfflinePackets, Packets};
 

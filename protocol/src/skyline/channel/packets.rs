@@ -1,11 +1,11 @@
 use binary_util::BinaryIo;
 
-use super::{ChannelPermission, Channel, ChannelResponseStatus};
+use super::{Channel, ChannelPermission, ChannelResponseStatus};
 
 #[derive(Debug, Clone, BinaryIo)]
 pub struct ChannelJoinRequest {
     /// The ID of the channel.
-    pub channel_id: u16
+    pub channel_id: u16,
 }
 
 #[derive(Debug, Clone, BinaryIo)]
@@ -18,7 +18,7 @@ pub struct ChannelJoinResponse {
     /// Not really important for the client, but is sent by the server
     /// as a way to tell the client what permissions it has on the channel.
     #[satisfy(self.status == ChannelResponseStatus::Ok)]
-    pub permissions: Option<ChannelPermission>
+    pub permissions: Option<ChannelPermission>,
 }
 
 /// This packet updates the permissions of the peer on a channel.
@@ -30,7 +30,7 @@ pub struct ChannelPermissionUpdate {
     /// The ID of the topic.
     pub topic_id: u16,
     /// The permissions of the topic.
-    pub permissions: ChannelPermission
+    pub permissions: ChannelPermission,
 }
 
 /// This packet is sent either by a peer or the server.
@@ -44,5 +44,5 @@ pub struct ChannelMessage {
     /// The ID of the peer that sent the message.
     pub peer_id: u32,
     /// The message sent.
-    pub message: Vec<u8>
+    pub message: Vec<u8>,
 }

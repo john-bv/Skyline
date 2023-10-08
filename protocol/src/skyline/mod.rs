@@ -3,8 +3,8 @@ use binary_util::BinaryIo;
 /// This is the skyline protocol
 /// This includes things like channels, api info etc...
 pub mod channel;
-pub mod connection;
 pub mod compression;
+pub mod connection;
 
 /// The packets enum for Skyline
 #[derive(BinaryIo)]

@@ -72,7 +72,7 @@ pub enum Disconnect {
     InvalidCredentials,
     InvalidProtocol,
     SelfInitiated,
-    Unknown
+    Unknown,
 }
 
 impl std::fmt::Display for Disconnect {
@@ -138,7 +138,6 @@ impl SplitPacket {
 pub struct SplitOk {
     pub id: u16,
 }
-
 
 #[derive(Debug, Clone, BinaryIo)]
 pub struct Payload {
