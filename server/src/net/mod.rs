@@ -6,7 +6,7 @@ use self::udp::*;
 pub mod tcp;
 
 use async_trait::async_trait;
-use protocol::net::skyline::connection::DisconnectReason;
+use protocol::skyline::connection::DisconnectReason;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ListenerState {
@@ -29,10 +29,12 @@ pub enum ConnState {
 pub trait ConnAdapter {
     /// Returns the current state of the connection.
     /// Closes the connection forcefully, the connection is assumed to be disbanded after this.
-    async fn close(&self, reason: DisconnectReason) -> Result<(), std::io::Result<()>>;
-    /// Sends a skyline packet to the connection. Returns the amount of bytes sent.
-    async fn send(&self, packet: &protocol::skyline::SkylinePacket) -> Result<usize, std::io::Error>;
+    async fn close(&self, reason: DisconnectReason) -> std::io::Result<()>;
+    /// Sends a skyline packet to the connection.
+    async fn send(&self, packet: &protocol::skyline::SkylinePacket) -> std::io::Result<()>;
     /// Recieves a skyline packet from the connection.
     /// This function will block until a packet is recieved.
-    async fn recv(&self) -> Result<protocol::skyline::SkylinePacket, std::io::Error>;
+    async fn recv(&mut self) -> Result<protocol::skyline::SkylinePacket, std::io::Error>;
+    /// Sends an arbitrary message to the connection.
+    async fn send_message(&self, data: protocol::net::tcp::Messages) -> std::io::Result<()>;
 }
