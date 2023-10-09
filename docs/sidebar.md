@@ -1,6 +1,0 @@
-- [Server](server/README.md)
-- [Protocol](protocol/README.md)
-  - [UDP](protocol/udp/README.md)
-    - [UDP Packets](protocol/udp/PACKETS.md)
-  - [TCP](protocol/tcp/README.md)
-  - [Skyline](protocol/skyline/README.md)
