@@ -1,7 +1,5 @@
 # Skyline
-A message broker designed with an extensible protocol.
-
-Skyline is a powerful micro-service responsible for allowing multiple services and clients to communicate with each other.
+A binary based message broker designed to be light-weight and versatile over other solutions like RabbitMQ or Kafka.
 
 ## Protocol
 For protocol information, please refer to the [protocol documentation](./PROTOCOL.md).

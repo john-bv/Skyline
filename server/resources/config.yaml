@@ -1,0 +1,32 @@
+authorization:
+  # Whether or not skyline should enable authorization
+  enabled: true
+  # Database options for authorization
+  database:
+      # Valid strategies include:
+      # - "local" (for testing, not recommended for production)
+      # - "redis" (default)
+      # - "mongo"
+      # - "postgres"
+      strategy: "redis"
+      # If the strategy is "local", this is the path to the local file
+      host: "file://server/credentials.env"
+      # Port of the strategy
+      port: 6379
+      # Auth of the strategy (if any)
+      auth:
+        # Username in the case of "postgres", "mongo", or "redis"
+        username: "username"
+        # Password in the case of "postgres", "mongo", or "redis"
+        password: "password"
+  # Token Type is the type of token to use for authorization
+  # Valid types include:
+  # - "skyline-token" (default)
+  # - "jwt"
+  # - "uuid"
+  kind: "skyline-token"
+  # The maximum number of attempts to try to authenticate a user
+  # if this is reached, the user will be locked out for a period of time
+  # and their token will expire.
+  maxAttempts: 3
+

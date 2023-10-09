@@ -29,7 +29,7 @@ pub enum ConnState {
 pub trait ConnAdapter {
     /// Returns the current state of the connection.
     /// Closes the connection forcefully, the connection is assumed to be disbanded after this.
-    async fn close(&self, reason: DisconnectReason) -> std::io::Result<()>;
+    async fn close(&mut self, reason: DisconnectReason) -> std::io::Result<()>;
     /// Sends a skyline packet to the connection.
     async fn send(&self, packet: &protocol::skyline::SkylinePacket) -> std::io::Result<()>;
     /// Recieves a skyline packet from the connection.

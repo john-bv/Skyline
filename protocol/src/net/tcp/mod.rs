@@ -4,6 +4,8 @@ use binary_util::{
 };
 use std::io;
 
+pub const PROTOCOL_VERSION: u16 = 1;
+
 #[derive(Debug, Clone)]
 pub struct Frame {
     pub id: u16,
@@ -45,6 +47,7 @@ impl Writer for Frame {
 #[derive(Debug, Clone, BinaryIo)]
 #[repr(u8)]
 pub enum Messages {
+    Connect(Connect) = 0,
     Hello(Hello) = 1,
     Disconnect(Disconnect) = 2,
     HeartbeatAck(HeartbeatAck) = 3,
@@ -55,8 +58,14 @@ pub enum Messages {
 
 #[derive(Debug, Clone, BinaryIo)]
 pub struct Connect {
-    pub auth: String,
-    pub service: String,
+    /// skyline protocol version
+    /// 0x0001 = 1
+    /// 0x0002 = 2 etc
+    pub version: u16,
+    /// max packet size
+    /// by default this is 1024
+    /// > CURRENTLY IGNORED
+    pub max_size: u16,
 }
 
 #[derive(Debug, Clone, BinaryIo)]
