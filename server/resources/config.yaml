@@ -1,3 +1,19 @@
+# What port should the server listen on?
+# This is how you will connect as a client.
+port: 24833
+
+# Cluster settings
+cluster:
+  # Whether or not to enable clustering
+  enabled: false
+  # Allow unverified clusters to connect
+  allowUnverified: false
+  # The maximum number of nodes to allow in the cluster
+  maxNodes: 10
+
+# Settings for how clients are authenticated
+# This is the default configuration, and should be modified
+# to suit your needs.
 authorization:
   # Whether or not skyline should enable authorization
   enabled: true
@@ -8,17 +24,16 @@ authorization:
       # - "redis" (default)
       # - "mongo"
       # - "postgres"
-      strategy: "redis"
+      provider: "redis"
       # If the strategy is "local", this is the path to the local file
       host: "file://server/credentials.env"
       # Port of the strategy
       port: 6379
       # Auth of the strategy (if any)
-      auth:
-        # Username in the case of "postgres", "mongo", or "redis"
-        username: "username"
-        # Password in the case of "postgres", "mongo", or "redis"
-        password: "password"
+      # Username in the case of "postgres", "mongo", or "redis"
+      username: "username"
+      # Password in the case of "postgres", "mongo", or "redis"
+      password: "password"
   # Token Type is the type of token to use for authorization
   # Valid types include:
   # - "skyline-token" (default)
@@ -29,4 +44,3 @@ authorization:
   # if this is reached, the user will be locked out for a period of time
   # and their token will expire.
   maxAttempts: 3
-

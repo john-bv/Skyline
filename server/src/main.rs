@@ -1,7 +1,8 @@
 use relative_path::RelativePath;
 
-pub mod net;
-pub mod peer;
+mod net;
+mod peer;
+mod config;
 pub(crate) mod utils;
 
 #[tokio::main]
