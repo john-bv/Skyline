@@ -5,3 +5,6 @@ target
 # IDES
 .idea
 .vscode
+
+composer.phar
+composer-setup.php
