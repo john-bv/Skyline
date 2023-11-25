@@ -2,34 +2,34 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ClusterOpts {
-    enabled: bool,
+    pub enabled: bool,
     #[serde(rename(serialize = "allowUnverified", deserialize = "allowUnverified"))]
-    allow_unverified: bool,
+    pub allow_unverified: bool,
     #[serde(rename(serialize = "maxPeers", deserialize = "maxPeers"))]
-    max_peers: u8,
+    pub max_peers: u8,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthOpts {
-    enabled: bool,
-    database: DbOpts,
-    kind: TokenStrategy,
+    pub enabled: bool,
+    pub database: DbOpts,
+    pub kind: TokenStrategy,
     #[serde(rename(serialize = "maxAttempts", deserialize = "maxAttempts"))]
-    max_attempts: u8,
+    pub max_attempts: u8,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DbOpts {
     /// The provider to use
-    provider: DbStrategy,
+    pub provider: DbStrategy,
     /// The address of the database
-    host: String,
+    pub host: String,
     /// The port of the database
-    port: u16,
+    pub port: u16,
     /// The username of the database **if required**
-    username: String,
+    pub username: String,
     /// The password of the database **if required**
-    password: String,
+    pub password: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,21 +41,37 @@ pub enum DbStrategy {
     #[serde(rename = "mongo")]
     Mongo,
     #[serde(rename = "redis")]
-    Redis
+    Redis,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TokenStrategy {
     Skyline,
     JWT,
-    UUID
+    UUID,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NetworkOpts {
+    pub mode: NetworkMode,
+    #[serde(rename(serialize = "maxConnections", deserialize = "maxConnections"))]
+    pub max_connections: u16,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum NetworkMode {
+    #[serde(rename = "tcp")]
+    Tcp,
+    #[serde(rename = "udp")]
+    Udp,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
-    port: u16,
-    cluster: ClusterOpts,
-    authorization: AuthOpts,
+    pub port: u16,
+    pub cluster: ClusterOpts,
+    pub authorization: AuthOpts,
+    pub network: NetworkOpts,
 }
 
 impl Config {
@@ -79,6 +95,21 @@ impl Config {
                 kind: TokenStrategy::Skyline,
                 max_attempts: 0,
             },
+            network: NetworkOpts {
+                mode: NetworkMode::Tcp,
+                max_connections: 0,
+            },
         }
+    }
+}
+
+pub trait ConfigParser {
+    fn parse(&self, config: &str) -> Config;
+}
+
+impl ConfigParser for Config {
+    fn parse(&self, config: &str) -> Config {
+        let config: Config = serde_yaml::from_str(config).unwrap();
+        config
     }
 }

@@ -44,3 +44,14 @@ authorization:
   # if this is reached, the user will be locked out for a period of time
   # and their token will expire.
   maxAttempts: 3
+
+# Server network settings
+network:
+  # The type of network to use
+  # Valid types include:
+  # - "tcp" (default)
+  # - "udp"
+  mode: "tcp"
+  # The maximum number of connections to allow
+  # 0 means unlimited
+  maxConnections: 0

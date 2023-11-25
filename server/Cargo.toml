@@ -25,3 +25,4 @@ dotenv = "0.15.0"
 relative-path = "1.9.0"
 serde_yaml = "0.9.25"
 serde = { version = "1.0.188", features = ["derive"] }
+colored = "2"
