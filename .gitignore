@@ -8,3 +8,6 @@ target
 
 composer.phar
 composer-setup.php
+
+/config.yaml
+/.env.example

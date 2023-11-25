@@ -38,3 +38,14 @@ pub trait ConnAdapter {
     /// Sends an arbitrary message to the connection.
     async fn send_message(&self, data: protocol::net::tcp::Messages) -> std::io::Result<()>;
 }
+
+/// Trait is responsible for interfacing with the Server, each listener is required
+/// to implement this trait.
+///
+/// It provides a universal API that can be used by the server without having to
+/// worry about the underlying implementation.
+pub trait NetworkInterface {
+    // Returns the current state of the listener.
+    // This will do all binding and setup required for the listener to be ready.
+    // async fn new(addr: &str) -> Result<Self, Box<dyn std::error::Error>>;
+}

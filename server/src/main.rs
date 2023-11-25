@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use relative_path::RelativePath;
 
 use crate::config::NetworkMode;
@@ -7,42 +5,13 @@ use crate::config::NetworkMode;
 mod config;
 mod net;
 mod peer;
+mod server;
 pub(crate) mod utils;
-
-macro_rules! log_error {
-    ($($msg:expr),*) => {
-        println!("{}{}{}","[Skyline/ERROR] ".red(), "".clear(), format!($($msg),*).red());
-    };
-}
-
-macro_rules! log_warn {
-    ($($msg:expr),*) => {
-        println!("{}{}{}","[Skyline/WARN] ".yellow(), "".clear(), format!($($msg),*).yellow());
-    };
-}
-
-macro_rules! log_info {
-    ($($msg:expr),*) => {
-        println!("{}{}{}","[Skyline/INFO] ".white(), "".clear(), format!($($msg),*).white());
-    };
-}
-
-macro_rules! log_notice {
-    ($($msg:expr),*) => {
-        println!("{}{}","[Skyline/NOTICE] ".blue(), format!($($msg),*).blue());
-    };
-}
-
-macro_rules! log_debug {
-    ($($msg:expr),*) => {
-        println!("{}{}","[Skyline/DEBUG] ".truecolor(53, 53, 53), format!($($msg),*).truecolor(53, 53, 53));
-    };
-}
 
 #[tokio::main]
 async fn main() {
     use colored::*;
-    let (config, verbosity) = match bootstrap() {
+    let (config, _) = match bootstrap() {
         Ok((config, verbosity)) => (config, verbosity),
         Err(e) => {
             log_error!("Failed to boot: {}", e);
@@ -63,25 +32,109 @@ fn bootstrap() -> std::io::Result<(self::config::Config, u8)> {
     // boot strap env
     use colored::*;
 
+    // load config
+    // try loading the config
+    // get the config from the cwd path ./config.yaml
+    let locale = match std::env::current_dir() {
+        Ok(locale) => locale,
+        Err(e) => {
+            log_debug!("Could not load current dir: {}", e);
+            log_error!("Skyline could not be loaded because of an OS error.");
+            return Err(e);
+        }
+    };
+
+    // verify the env file exists
+    if !locale.join(".env.example").exists() {
+        log_debug!(
+            "Could not find .env.example in {}, creating it...",
+            locale.to_str().unwrap()
+        );
+        match std::fs::File::create(RelativePath::new(".env.example").to_path(&locale)) {
+            Ok(_) => {
+                log_debug!("Successfully created .env.example");
+                log_debug!("Storing random secrets in .env.example");
+            }
+            Err(e) => {
+                log_error!("Failed to create .env.example. Please fix this issue and retry...\n -> Reason: {}", e);
+                std::process::exit(1);
+            }
+        }
+    }
+
     if let Err(_) = dotenv::dotenv() {
         // attempt to load the .env resource
         let locale = std::env::current_exe().unwrap();
         let rel = RelativePath::new(".env");
         if let Err(_) = dotenv::from_path(rel.to_path(&locale.parent().unwrap())) {
-            log_error!(
-                "Error: .env not found in {}, exiting...",
+            log_debug!(
+                "Error: .env not found in {}, random secrets will be used",
                 rel.to_path(&locale).to_str().unwrap()
             );
-            // exit
-            // std::process::exit(1);
+            log_warn!(
+                "No .env file found, please modify the .env.example file and rename it to .env"
+            );
+            std::process::exit(1);
         }
-
-        log_warn!("Default settings will be used regadless of .env file presence.");
-
-        // try loading the config
-        // get the config from the cwd path ./config.yaml
-        let locale = std::env::current_dir();
     }
 
-    return Ok((Config::new(), 0));
+    // Check the config to see if it exists
+    if !locale.join("config.yaml").exists() {
+        log_debug!("Could not find config.yaml in {}", locale.to_str().unwrap());
+    }
+
+    let default_config = include_str!("../resources/config.yaml");
+    log_debug!("Default config: {}", default_config);
+
+    let user_config = match std::fs::read_to_string(
+        RelativePath::new("config.yaml").to_path(&locale),
+    ) {
+        Ok(v) => {
+            // check if the config is the same as the default config
+            if v == default_config {
+                log_warn!("You are using the default config, please edit the config.yaml file! Using the default config is not recommended as sykline will not persist!");
+            }
+
+            // attempt to parse the config
+            match serde_yaml::from_str::<config::Config>(&v) {
+                Ok(v) => {
+                    log_info!("Successfully loaded config.yaml");
+                    v
+                }
+                Err(e) => {
+                    log_error!("Failed to parse config.yaml: {}", e);
+                    std::process::exit(1);
+                }
+            }
+        }
+        Err(_) => {
+            // attempt to create the config file
+            let rel = RelativePath::new("config.yaml");
+            if let Err(_) = std::fs::File::create(rel.to_path(&locale)) {
+                log_error!(
+                    "Error: Could not create config.yaml in {}",
+                    rel.to_path(&locale).to_str().unwrap()
+                );
+                log_debug!("last error: {}", std::io::Error::last_os_error());
+                std::process::exit(1);
+            }
+
+            // make the file
+            match std::fs::write(rel.to_path(&locale), default_config) {
+                Ok(_) => {
+                    log_debug!("Should've wrote: {}", default_config);
+                    log_info!("Successfully created config.yaml");
+                }
+                Err(e) => {
+                    log_error!("Failed to create config.yaml. Please fix this issue and retry...\n -> Reason: {}", e);
+                    std::process::exit(1);
+                }
+            }
+
+            log_warn!("Please edit the config.yaml file to your liking and restart the server.");
+            std::process::exit(0);
+        }
+    };
+
+    return Ok((user_config, 0));
 }

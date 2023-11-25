@@ -5,7 +5,7 @@ pub struct ClusterOpts {
     pub enabled: bool,
     #[serde(rename(serialize = "allowUnverified", deserialize = "allowUnverified"))]
     pub allow_unverified: bool,
-    #[serde(rename(serialize = "maxPeers", deserialize = "maxPeers"))]
+    #[serde(rename(serialize = "maxNodes", deserialize = "maxNodes"))]
     pub max_peers: u8,
 }
 
@@ -46,8 +46,11 @@ pub enum DbStrategy {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TokenStrategy {
+    #[serde(rename = "skyline")]
     Skyline,
+    #[serde(rename = "jwt")]
     JWT,
+    #[serde(rename = "uuid")]
     UUID,
 }
 

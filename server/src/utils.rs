@@ -67,3 +67,47 @@ pub fn current_epoch() -> u64 {
         .unwrap()
         .as_secs()
 }
+
+#[macro_export]
+macro_rules! log_error {
+    ($($msg:expr),*) => {
+        println!("{}{}{}","[Skyline/ERROR] ".red(), "".clear(), format!($($msg),*).red());
+    };
+}
+
+#[macro_export]
+macro_rules! log_warn {
+    ($($msg:expr),*) => {
+        println!("{}{}{}","[Skyline/WARN] ".yellow(), "".clear(), format!($($msg),*).yellow());
+    };
+}
+
+#[macro_export]
+macro_rules! log_info {
+    ($($msg:expr),*) => {
+        println!("{}{}{}","[Skyline/INFO] ".white(), "".clear(), format!($($msg),*).white());
+    };
+}
+
+#[macro_export]
+macro_rules! log_notice {
+    ($($msg:expr),*) => {
+        println!("{}{}","[Skyline/NOTICE] ".blue(), format!($($msg),*).blue());
+    };
+}
+
+#[macro_export]
+macro_rules! log_debug {
+    ($($msg:expr),*) => {
+        if cfg!(feature = "debug") {
+            println!("{}{}","[Skyline/DEBUG] ".truecolor(53, 53, 53), format!($($msg),*).truecolor(53, 53, 53));
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! log_success {
+    ($($msg:expr),*) => {
+        println!("{}{}","[Skyline/SUCCESS] ".green(), format!($($msg),*).green());
+    };
+}

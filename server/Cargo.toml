@@ -12,6 +12,8 @@ udp = []
 # Allows using the skyline `TcpListener` and `TcpStream`.
 # This has the same tradeoffs as the `udp` feature, but is more stable (at the current time).
 tcp = []
+# Allows displaying of debug information.
+debug = []
 # This is the default feature set, this is stable but not as efficient.
 default = ["tcp"]
 

@@ -36,10 +36,10 @@ authorization:
       password: "password"
   # Token Type is the type of token to use for authorization
   # Valid types include:
-  # - "skyline-token" (default)
+  # - "skyline" (default)
   # - "jwt"
   # - "uuid"
-  kind: "skyline-token"
+  kind: "skyline"
   # The maximum number of attempts to try to authenticate a user
   # if this is reached, the user will be locked out for a period of time
   # and their token will expire.
