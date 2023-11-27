@@ -20,7 +20,7 @@ async fn main() {
     };
 
     if config.network.mode == NetworkMode::Tcp {
-        log_info!("Starting TCP server on port {}", config.port);
+        log_debug!("Starting TCP server on port {}", config.port);
     }
 
     ()
@@ -84,7 +84,7 @@ fn bootstrap() -> std::io::Result<(self::config::Config, u8)> {
     }
 
     let default_config = include_str!("../resources/config.yaml");
-    log_debug!("Default config: {}", default_config);
+    // log_debug!("Default config: {}", default_config);
 
     let user_config = match std::fs::read_to_string(
         RelativePath::new("config.yaml").to_path(&locale),
@@ -98,7 +98,7 @@ fn bootstrap() -> std::io::Result<(self::config::Config, u8)> {
             // attempt to parse the config
             match serde_yaml::from_str::<config::Config>(&v) {
                 Ok(v) => {
-                    log_info!("Successfully loaded config.yaml");
+                    log_debug!("Successfully loaded config.yaml");
                     v
                 }
                 Err(e) => {

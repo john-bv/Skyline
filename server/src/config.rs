@@ -32,7 +32,7 @@ pub struct DbOpts {
     pub password: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum DbStrategy {
     #[serde(rename = "postgres")]
     Postgres,
@@ -44,7 +44,7 @@ pub enum DbStrategy {
     Redis,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum TokenStrategy {
     #[serde(rename = "skyline")]
     Skyline,
@@ -54,19 +54,28 @@ pub enum TokenStrategy {
     UUID,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct NetworkOpts {
     pub mode: NetworkMode,
     #[serde(rename(serialize = "maxConnections", deserialize = "maxConnections"))]
     pub max_connections: u16,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 pub enum NetworkMode {
     #[serde(rename = "tcp")]
     Tcp,
     #[serde(rename = "udp")]
     Udp,
+}
+
+impl std::fmt::Display for NetworkMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Tcp => write!(f, "TCP"),
+            Self::Udp => write!(f, "UDP"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

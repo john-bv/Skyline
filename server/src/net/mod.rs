@@ -44,8 +44,53 @@ pub trait ConnAdapter {
 ///
 /// It provides a universal API that can be used by the server without having to
 /// worry about the underlying implementation.
+#[async_trait]
 pub trait NetworkInterface {
     // Returns the current state of the listener.
     // This will do all binding and setup required for the listener to be ready.
     // async fn new(addr: &str) -> Result<Self, Box<dyn std::error::Error>>;
+    async fn new(addr: &str) -> Result<Self, Box<dyn std::error::Error>>
+    where
+        Self: Sized;
+
+    /// Binds the listener to the specified address.
+    /// This will do all binding and setup required for the listener to be ready.
+    async fn bind(&mut self) -> Result<(), Box<dyn std::error::Error>>;
+
+    /// Accepts a new connection from the listener.
+    /// The connection is passed on to the caller
+    async fn accept(&mut self) -> Result<Box<dyn ConnAdapter>, Box<dyn std::error::Error>>;
+
+    /// Closes the listener forcefully, the listener is assumed to be disbanded after this.
+    /// This will close all connections associated with the listener.
+    async fn close(&mut self) -> Result<(), Box<dyn std::error::Error>>;
+
+    fn get_name(&self) -> &str {
+        "null"
+    }
+}
+
+
+pub struct NullInterface;
+
+#[async_trait]
+impl NetworkInterface for NullInterface {
+    async fn new(_addr: &str) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Self)
+    }
+
+    async fn bind(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
+
+    async fn accept(&mut self) -> Result<Box<dyn ConnAdapter>, Box<dyn std::error::Error>> {
+        Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "NullInterface does not accept connections",
+        )))
+    }
+
+    async fn close(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
 }

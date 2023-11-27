@@ -15,7 +15,7 @@ tcp = []
 # Allows displaying of debug information.
 debug = []
 # This is the default feature set, this is stable but not as efficient.
-default = ["tcp"]
+default = ["tcp", "debug"]
 
 [dependencies]
 tokio = { version = "1.27.0", features = ["full"] }
