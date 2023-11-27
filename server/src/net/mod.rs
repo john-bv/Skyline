@@ -2,7 +2,6 @@
 pub mod udp;
 #[cfg(feature = "udp")]
 use self::udp::*;
-#[cfg(feature = "tcp")]
 pub mod tcp;
 
 use async_trait::async_trait;

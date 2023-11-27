@@ -19,9 +19,40 @@ async fn main() {
         }
     };
 
-    if config.network.mode == NetworkMode::Tcp {
-        log_debug!("Starting TCP server on port {}", config.port);
+    // initialize the server
+    let mut server = match server::Server::new(&config).await {
+        Ok(v) => v,
+        Err(e) => {
+            log_debug!("Error: {}", e);
+            log_error!("A critcal error prevented skyline from initializing the server.");
+
+            if std::env::var("SKYLINE_DEBUG").unwrap_or("0".to_string()) == "0" {
+                log_error!("Run with debug mode enabled to see more information.");
+            }
+
+            std::process::exit(1);
+        }
+    };
+
+    match server.bind().await {
+        Ok(_) => {}
+        Err(e) => {
+            log_error!("Failed to bind: {}", e);
+            return;
+        }
     }
+
+    // start the server
+    match server.start().await {
+        Ok(_) => {}
+        Err(e) => {
+            log_error!("Failed to start: {}", e);
+            return;
+        }
+    }
+
+    // at this point the server is running
+    log_notice!("Stopped.");
 
     ()
 }

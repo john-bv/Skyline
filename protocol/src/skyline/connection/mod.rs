@@ -77,11 +77,14 @@ pub enum LoginResponseCode {
 #[repr(u8)]
 pub enum DisconnectReason {
     /// The connection was closed by the server.
-    Closed,
+    Closed = 0x0,
+    /// The server is not allowing new connections at this time
+    NotAccepting,
     /// The connection was closed by the client.
     Disband,
-    /// The token for th eclient is no longer valid.
+    /// The token for the client is no longer valid.
     InvalidToken,
+    #[deprecated(note = "Use InvalidToken instead")]
     InvalidName,
     InvalidIdentifiers,
     InvalidProtocol,

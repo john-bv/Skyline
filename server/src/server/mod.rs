@@ -1,6 +1,6 @@
 use tokio::sync::Notify;
 
-use crate::{config::NetworkMode, log_error, log_debug, net::NetworkInterface};
+use crate::{config::NetworkMode, log_error, log_debug, net::NetworkInterface, log_notice, log_warn, log_success};
 
 use colored::*;
 
@@ -19,9 +19,9 @@ pub struct Server {
 
 impl Server {
     pub async fn new(
-        address: &str,
         config: &crate::config::Config,
     ) -> Result<Self, Box<dyn std::error::Error>> {
+        let bind_address = format!("0.0.0.0:{}", config.port);
         let mode = config.network.mode.clone();
         let close = Notify::new();
         Ok(Self {
@@ -29,11 +29,15 @@ impl Server {
             close,
             config: config.clone(),
             interface: match mode {
-                NetworkMode::Tcp => Box::new(crate::net::tcp::TcpListener::new(address).await?),
+                NetworkMode::Tcp => {
+                    log_debug!("TCP mode selected, binding to {}", bind_address);
+                    log_warn!("TCP mode selected by config file, with multiple clients (over 200) this may cause performance issues.");
+                    Box::new(crate::net::tcp::TcpListener::new(bind_address.as_str()).await?)
+                }
                 // NetworkMode::Udp => Box::new(crate::net::udp::UdpListener::new(address)?),
                 _ => {
-                    log_error!("Unsupported network mode: {}", mode);
-                    std::process::exit(1);
+                    log_error!("Unsupported network mode: {}, attempting to start anyway...", mode);
+                    Box::new(crate::net::NullInterface::new(bind_address.as_str()).await?)
                 }
             },
         })
@@ -41,8 +45,6 @@ impl Server {
 
     pub async fn bind(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let bind_address = format!("0.0.0.0:{}", self.config.port);
-
-        log_debug!("Binding to {}", bind_address);
 
         if self.interface.get_name() == "null" {
             log_debug!("Refusing to bind: null interface");
@@ -52,6 +54,14 @@ impl Server {
         }
 
         self.interface.bind().await?;
+
+        Ok(())
+    }
+
+    pub async fn start(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        log_debug!("Starting server");
+        log_notice!("Starting database connection");
+
 
         Ok(())
     }
