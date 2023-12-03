@@ -34,6 +34,15 @@ async fn main() {
         }
     };
 
+    let closer = server.close.clone();
+
+    if let Err(_) = ctrlc::set_handler(move || {
+        closer.as_ref().notify_waiters();
+    }) {
+        log_error!("Failed to set SIGTERM handler");
+        return;
+    }
+
     match server.bind().await {
         Ok(_) => {}
         Err(e) => {
@@ -52,7 +61,7 @@ async fn main() {
     }
 
     // at this point the server is running
-    log_notice!("Stopped.");
+    log_success!("Stopped.");
 
     ()
 }

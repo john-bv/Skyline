@@ -11,6 +11,9 @@ use protocol::skyline::{connection::DisconnectReason, SkylinePacket};
 use protocol::util::current_epoch;
 use tokio::sync::{Notify, RwLock};
 
+use colored::*;
+
+use crate::log_debug;
 use crate::net::{ConnAdapter, ConnState};
 
 pub struct Conn {
@@ -264,6 +267,7 @@ impl Conn {
 
                         if let Err(_) = Self::send_packet(socket, send_splits, split_ok).await {
                             // dont error here...
+                            log_debug!("Failed to send split ok packet to: {:?}", addr);
                         }
 
                         recv_splits.remove(&split.id);
@@ -433,5 +437,9 @@ impl ConnAdapter for Conn {
             std::io::ErrorKind::Interrupted,
             "Channel closed",
         ));
+    }
+
+    fn get_addr(&self) -> SocketAddr {
+        self.addr
     }
 }

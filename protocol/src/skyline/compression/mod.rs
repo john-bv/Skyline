@@ -10,6 +10,6 @@ pub enum CompressionAlgorithm {
 
 #[derive(Debug, BinaryIo)]
 pub struct CompressedMessage {
-    pub algorithm: u8,
+    pub algorithm: CompressionAlgorithm,
     pub message: Vec<u8>,
 }

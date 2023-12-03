@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use tokio::sync::Notify;
 
 use crate::{config::NetworkMode, log_error, log_debug, net::NetworkInterface, log_notice, log_warn, log_success};
@@ -12,7 +14,7 @@ use colored::*;
 /// in the config. IE, the TCP interface will be used if TCP is specified.
 pub struct Server {
     mode: NetworkMode,
-    close: Notify,
+    pub close: Arc<Notify>,
     config: crate::config::Config,
     interface: Box<dyn crate::net::NetworkInterface>,
 }
@@ -23,7 +25,7 @@ impl Server {
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let bind_address = format!("0.0.0.0:{}", config.port);
         let mode = config.network.mode.clone();
-        let close = Notify::new();
+        let close = Arc::new(Notify::new());
         Ok(Self {
             mode,
             close,
@@ -44,8 +46,6 @@ impl Server {
     }
 
     pub async fn bind(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let bind_address = format!("0.0.0.0:{}", self.config.port);
-
         if self.interface.get_name() == "null" {
             log_debug!("Refusing to bind: null interface");
             log_error!("Skyline ran into an error while binding to the interface.");
@@ -59,9 +59,47 @@ impl Server {
     }
 
     pub async fn start(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        log_debug!("Starting server");
-        log_notice!("Starting database connection");
+        log_warn!("Skyline does not currently support database connections.");
 
+        // database stuff above this...
+
+        log_success!("Skyline is now listening on port {}.", self.config.port);
+
+        loop {
+            tokio::select! {
+                _ = self.close.notified() => {
+                    log_notice!("Closing...");
+                    break;
+                }
+                conn = self.interface.accept() => {
+                    match conn {
+                        Ok(ref conn) => {
+                            log_debug!("Accepted connection from {}", conn.get_addr());
+                        }
+                        Err(e) => {
+                            log_debug!("Failed to accept connection: {}", e);
+                            continue;
+                        }
+                    };
+                    // create a new peer with this connection
+                    let closer = self.close.clone();
+
+                    tokio::task::spawn(async move {
+                        println!("Hello, world!");
+                        conn.unwrap();
+                    });
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub fn stop(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        self.close.notify_waiters();
+        let handle = tokio::runtime::Handle::current();
+        if let Err(_) = handle.block_on(self.interface.close()) {
+            log_error!("Failed to close network interface.");
+        };
 
         Ok(())
     }

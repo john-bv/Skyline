@@ -1,17 +1,14 @@
 use std::sync::Arc;
+use protocol::skyline::SkylinePacket;
 
-#[cfg(feature = "tcp")]
-use crate::net::tcp::conn::Conn;
-#[cfg(feature = "udp")]
-use crate::net::udp::conn::Conn;
 use crate::net::ConnAdapter;
 
 pub struct Peer {
-    inner: Conn,
+    inner: Box<dyn ConnAdapter>,
 }
 
 impl Peer {
-    pub fn new(inner: Conn) -> Self {
+    pub fn new(inner: Box<dyn ConnAdapter>) -> Self {
         Self { inner }
     }
 
@@ -20,6 +17,11 @@ impl Peer {
         reason: protocol::skyline::connection::DisconnectReason,
     ) -> std::io::Result<()> {
         self.inner.close(reason).await?;
+        Ok(())
+    }
+
+    pub async fn send_raw(&mut self, packet: &SkylinePacket) -> std::io::Result<()> {
+        self.inner.send(packet).await?;
         Ok(())
     }
 }
