@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use tokio::sync::Notify;
 
-use crate::{config::NetworkMode, log_error, log_debug, net::NetworkInterface, log_notice, log_warn, log_success};
+use crate::{
+    config::NetworkMode, log_debug, log_error, log_notice, log_success, log_warn,
+    net::NetworkInterface,
+};
 
 use colored::*;
 
@@ -20,9 +23,7 @@ pub struct Server {
 }
 
 impl Server {
-    pub async fn new(
-        config: &crate::config::Config,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn new(config: &crate::config::Config) -> Result<Self, Box<dyn std::error::Error>> {
         let bind_address = format!("0.0.0.0:{}", config.port);
         let mode = config.network.mode.clone();
         let close = Arc::new(Notify::new());
@@ -38,7 +39,10 @@ impl Server {
                 }
                 // NetworkMode::Udp => Box::new(crate::net::udp::UdpListener::new(address)?),
                 _ => {
-                    log_error!("Unsupported network mode: {}, attempting to start anyway...", mode);
+                    log_error!(
+                        "Unsupported network mode: {}, attempting to start anyway...",
+                        mode
+                    );
                     Box::new(crate::net::NullInterface::new(bind_address.as_str()).await?)
                 }
             },

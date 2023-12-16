@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use protocol::skyline::SkylinePacket;
+use std::sync::Arc;
 
 use crate::net::ConnAdapter;
 

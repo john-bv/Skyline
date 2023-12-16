@@ -19,6 +19,7 @@ default = ["tcp"]
 
 [dependencies]
 tokio = { version = "1.27.0", features = ["full"] }
+skyline = { path = '../skyline' }
 protocol = { path = "../protocol" }
 binary-util = { git = "https://github.com/NetrexMC/binary-utils.git", branch = "master" }
 async-trait = "0.1.73"

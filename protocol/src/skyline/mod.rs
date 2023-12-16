@@ -1,5 +1,9 @@
 use binary_util::BinaryIo;
 
+/// This is the binary api interface for Skyline.
+/// This module contains things like the value types, and the api packets.
+/// Think of this as a BSON but for Skyline.
+pub mod api;
 /// This is the skyline protocol
 /// This includes things like channels, api info etc...
 pub mod channel;

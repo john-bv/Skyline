@@ -75,7 +75,6 @@ pub trait NetworkInterface {
     }
 }
 
-
 pub struct NullInterface;
 
 #[async_trait]

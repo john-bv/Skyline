@@ -43,6 +43,13 @@ pub struct ChannelMessage {
     pub topic_id: u16,
     /// The ID of the peer that sent the message.
     pub peer_id: u32,
+    /// Whether or not this message was queued.
+    /// If this is true, the message was queued.
+    /// If this is false, the message was sent immediately.
+    pub queued: bool,
+    /// If queued, the time the message was queued.
+    #[satisfy(self.queued)]
+    pub queued_time: Option<u64>,
     /// The message sent.
     pub message: Vec<u8>,
 }

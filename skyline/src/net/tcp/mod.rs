@@ -1,9 +1,11 @@
+/// A Client is the primary way to interact with a server.
+pub mod client;
 pub mod conn;
 
 use std::sync::Arc;
 
-use tokio::sync::Notify;
 use async_trait::async_trait;
+use tokio::sync::Notify;
 
 use super::{ListenerState, NetworkInterface};
 

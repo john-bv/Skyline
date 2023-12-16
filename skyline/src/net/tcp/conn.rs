@@ -16,6 +16,8 @@ use colored::*;
 use crate::log_debug;
 use crate::net::{ConnAdapter, ConnState};
 
+/// This struct represents a raw TCP connection and provides a base
+/// abstraction for the server to use via `ConnAdapter`.
 pub struct Conn {
     pub addr: SocketAddr,
     pub state: ConnState,

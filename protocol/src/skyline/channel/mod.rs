@@ -1,5 +1,6 @@
 use binary_util::BinaryIo;
 
+pub mod api;
 pub mod packets;
 
 /// A channel in Skyline is like an api "endpoint"
@@ -30,6 +31,9 @@ pub struct Channel {
     /// If this this false, you are assumed to know the endpoints for this channel.
     /// False is less overhead, but less user friendly.
     pub has_api: bool,
+    /// The type of messages that will be sent on this channel.
+    /// This is used to determine how the client should handle the messages.
+    pub message_type: ChannelMessageType,
 }
 
 #[derive(Debug, Clone, BinaryIo)]
@@ -88,8 +92,16 @@ pub enum ChannelResponseStatus {
 #[derive(Debug, Clone, BinaryIo)]
 #[repr(u8)]
 pub enum ChannelMessageType {
+    /// Messages are live, and will never be queued.
+    /// This is the default message type, and is the most common.
     Broadcast,
+    /// Messages are peer to peer, and will never be queued.
+    /// This is the second most common message type.
     Direct,
+    /// Messages are queued, and will be sent when the peer is online.
+    /// However after the peer is online, the message will be sent immediately, and will not be queued.
     Propagate,
+    /// All messages are queued, regardless of the state of the peer.
+    /// This is useful for messages like store updates or state updates.
     Queue,
 }

@@ -1,12 +1,10 @@
 use relative_path::RelativePath;
-
-use crate::config::NetworkMode;
+use skyline::net;
+use skyline::{log_debug, log_error, log_info, log_notice, log_success, log_warn};
 
 mod config;
-mod net;
 mod peer;
 mod server;
-pub(crate) mod utils;
 
 #[tokio::main]
 async fn main() {
