@@ -10,6 +10,10 @@ pub mod channel;
 pub mod compression;
 pub mod connection;
 
+/// Service related packets.
+/// This contains things like service registration, and service discovery.
+pub mod service;
+
 /// The packets enum for Skyline
 #[derive(BinaryIo)]
 #[repr(u16)]
