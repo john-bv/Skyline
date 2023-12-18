@@ -20,7 +20,7 @@ pub struct Channel {
     pub id: u16,
     /// The amount of subscribers to the channel.
     /// You need to request the peers to get that information
-    pub subscribers: u32,
+    pub subscribers: varu32,
     /// The different kinds of Topics that this channel has.
     /// Topics are like sub-channels, they are a way to further isolate packets.
     /// IE: If you want to join a chat channel, you can choose to only join the guild chat topic.
@@ -111,25 +111,4 @@ pub enum ChannelMessageType {
     /// All messages are queued, regardless of the state of the peer.
     /// This is useful for messages like store updates or state updates.
     Queue,
-}
-
-/// This packet is sent either by a peer or the server.
-/// This is a message sent to a specific peer on a channel
-#[derive(Debug, Clone, BinaryIo)]
-pub struct ChannelMessage {
-    /// The ID of the channel.
-    pub channel_id: u16,
-    /// The ID of the topic.
-    pub topic_id: u16,
-    /// The ID of the peer that sent the message.
-    pub peer_id: varu32,
-    /// Whether or not this message was queued.
-    /// If this is true, the message was queued.
-    /// If this is false, the message was sent immediately.
-    pub queued: bool,
-    /// If queued, the time the message was queued.
-    #[satisfy(self.queued)]
-    pub queued_time: Option<varu64>,
-    /// The message sent.
-    pub message: Vec<u8>,
 }

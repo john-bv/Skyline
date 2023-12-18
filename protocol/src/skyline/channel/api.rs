@@ -1,4 +1,4 @@
-use binary_util::BinaryIo;
+use binary_util::{BinaryIo, types::varu32};
 
 use crate::skyline::api::value::ValueIds;
 
@@ -17,11 +17,11 @@ pub struct FetchApi {}
 /// The following code:
 /// ```ignore
 /// pub struct GetPlayerPacket {
-///    pub player_id: u32
+///    pub player_id: varu32
 /// }
 ///
 /// pub struct Player {
-///    pub id: u32,
+///    pub id: varu32,
 ///    pub name: String,
 ///    pub age: u8,
 ///    pub server: Option<String>,
@@ -47,7 +47,7 @@ pub struct FetchApi {}
 ///             "fields": [
 ///                 {
 ///                     "name": "id",
-///                     "type": "u32"
+///                     "type": "varu32"
 ///                 },
 ///                 {
 ///                     "name": "name",
@@ -71,7 +71,7 @@ pub struct FetchApi {}
 ///             "fields": [
 ///                 {
 ///                     "name": "playerId",
-///                     "type": "u32"
+///                     "type": "varu32"
 ///                 }
 ///             ]
 ///         },
@@ -132,7 +132,7 @@ pub struct ApiTypeDefinition {
     /// The name of the type.
     pub name: String,
     /// The ID of the type.
-    pub id: u32,
+    pub id: varu32,
     /// The underlying fields of the type
     pub fields: Vec<ApiField>,
 }
