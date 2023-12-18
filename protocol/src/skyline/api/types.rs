@@ -26,6 +26,21 @@ impl SkylineHashMap {
         self.map.iter().find(|(k, _)| k == key).map(|(_, v)| v)
     }
 
+    pub fn get_mut(&mut self, key: &Value) -> Option<&mut Value> {
+        self.map
+            .iter_mut()
+            .find(|(k, _)| k == key)
+            .map(|(_, v)| v)
+    }
+
+    pub fn remove(&mut self, key: &Value) -> Option<Value> {
+        if let Some(index) = self.map.iter().position(|(k, _)| k == key) {
+            Some(self.map.remove(index).1)
+        } else {
+            None
+        }
+    }
+
     pub fn insert(&mut self, key: Value, value: Value) {
         if self.contains_key(&key) {
             self.map
@@ -48,6 +63,18 @@ impl Reader<SkylineHashMap> for SkylineHashMap {
         for _ in 0..amount {
             // THE KEY IS NOT ALWAYS A STRING,
             // IT CAN ONLY BE A STRING, NUMBER, OR BOOLEAN.
+            // todo stop parsing as a value and parse as a string, number, or boolean
+            // match buf.read_type::<Value>()? {
+            //     Value::String(_) => {}
+            //     Value::Number(_) => {}
+            //     Value::Boolean(_) => {}
+            //     _ => {
+            //         return Err(std::io::Error::new(
+            //             std::io::ErrorKind::InvalidData,
+            //             "key is not a string, number, or boolean",
+            //         ))
+            //     }
+            // }
             let key = buf.read_type::<Value>()?;
             let value = buf.read_type::<Value>()?;
             map.insert(key, value);

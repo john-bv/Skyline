@@ -55,3 +55,24 @@ network:
   # The maximum number of connections to allow
   # 0 means unlimited
   maxConnections: 0
+
+# Channel settings
+channels:
+  # The maximum number of channels to allow
+  # 0 means unlimited
+  maxChannels: 0
+  # The maximum number of clients to allow per channel
+  # 0 means unlimited
+  maxClients: 0
+  # The default channel to join when connecting
+  default: "public"
+  # User defined channels that have no service attached to them
+  userDefined:
+    # This is a test channel
+    # This channel has it's own api and does not accept raw messages
+    - name: "test"
+      # Api options for this channel
+      api:
+        # Enforce the skyline api mode.
+        enforce: true
+        

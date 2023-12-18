@@ -1,4 +1,4 @@
-use binary_util::BinaryIo;
+use binary_util::{BinaryIo, types::{varu32, varu64}};
 
 use super::{Channel, ChannelPermission, ChannelResponseStatus};
 
@@ -31,25 +31,4 @@ pub struct ChannelPermissionUpdate {
     pub topic_id: u16,
     /// The permissions of the topic.
     pub permissions: ChannelPermission,
-}
-
-/// This packet is sent either by a peer or the server.
-/// This is a message sent to a specific peer on a channel
-#[derive(Debug, Clone, BinaryIo)]
-pub struct ChannelMessage {
-    /// The ID of the channel.
-    pub channel_id: u16,
-    /// The ID of the topic.
-    pub topic_id: u16,
-    /// The ID of the peer that sent the message.
-    pub peer_id: u32,
-    /// Whether or not this message was queued.
-    /// If this is true, the message was queued.
-    /// If this is false, the message was sent immediately.
-    pub queued: bool,
-    /// If queued, the time the message was queued.
-    #[satisfy(self.queued)]
-    pub queued_time: Option<u64>,
-    /// The message sent.
-    pub message: Vec<u8>,
 }

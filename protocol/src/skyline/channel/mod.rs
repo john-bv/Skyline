@@ -1,4 +1,4 @@
-use binary_util::BinaryIo;
+use binary_util::{BinaryIo, types::{varu32, varu64}};
 
 pub mod api;
 pub mod packets;
@@ -30,7 +30,9 @@ pub struct Channel {
     ///
     /// If this this false, you are assumed to know the endpoints for this channel.
     /// False is less overhead, but less user friendly.
-    pub has_api: bool,
+    pub api_enabled: bool,
+    /// Whether or not the api-layer for this channel is enforced.
+    pub api_enforced: bool,
     /// The type of messages that will be sent on this channel.
     /// This is used to determine how the client should handle the messages.
     pub message_type: ChannelMessageType,
@@ -51,6 +53,11 @@ pub struct ChannelTopic {
 }
 
 /// These are permissions that can be used to restrict access to channels.
+/// Global channels automatically give all authenticated clients the following permissions:
+/// - Recv
+/// - RecvAll
+/// - SendOne
+/// - SendAll
 #[derive(Debug, Clone, BinaryIo)]
 #[repr(u8)]
 pub enum ChannelPermission {
@@ -104,4 +111,25 @@ pub enum ChannelMessageType {
     /// All messages are queued, regardless of the state of the peer.
     /// This is useful for messages like store updates or state updates.
     Queue,
+}
+
+/// This packet is sent either by a peer or the server.
+/// This is a message sent to a specific peer on a channel
+#[derive(Debug, Clone, BinaryIo)]
+pub struct ChannelMessage {
+    /// The ID of the channel.
+    pub channel_id: u16,
+    /// The ID of the topic.
+    pub topic_id: u16,
+    /// The ID of the peer that sent the message.
+    pub peer_id: varu32,
+    /// Whether or not this message was queued.
+    /// If this is true, the message was queued.
+    /// If this is false, the message was sent immediately.
+    pub queued: bool,
+    /// If queued, the time the message was queued.
+    #[satisfy(self.queued)]
+    pub queued_time: Option<varu64>,
+    /// The message sent.
+    pub message: Vec<u8>,
 }

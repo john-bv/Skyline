@@ -14,7 +14,7 @@ pub struct FetchApi {}
 /// This packet contains all the packets that are available to the client.
 ///
 ///
-/// The following struct:
+/// The following code:
 /// ```ignore
 /// pub struct GetPlayerPacket {
 ///    pub player_id: u32
@@ -37,7 +37,7 @@ pub struct FetchApi {}
 ///     .with_type("Player", Player::default())
 ///     .finish();
 /// ```
-/// Can be visualized as the following in JSON:
+/// Can be visualized as the following in JSON over the wire:
 /// ```json
 /// {
 ///     "name": "database-proto-skyline",
