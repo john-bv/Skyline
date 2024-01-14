@@ -4,6 +4,7 @@ use skyline::{log_debug, log_error, log_info, log_notice, log_success, log_warn}
 
 mod config;
 mod peer;
+mod channel;
 mod server;
 
 #[tokio::main]

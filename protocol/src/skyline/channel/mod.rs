@@ -93,7 +93,7 @@ pub enum ChannelResponseStatus {
     Ok,
     /// The channel is migrating to another server soon,
     /// and you should reconnect to the new server.
-    Migrate,
+    Migrate(String),
 }
 
 #[derive(Debug, Clone, BinaryIo)]

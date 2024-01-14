@@ -88,6 +88,8 @@ impl Server {
                     // create a new peer with this connection
                     let closer = self.close.clone();
 
+                    // Peer::init(conn, closer).await;
+
                     tokio::task::spawn(async move {
                         println!("Hello, world!");
                         conn.unwrap();

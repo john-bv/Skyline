@@ -9,6 +9,7 @@ pub mod api;
 pub mod channel;
 pub mod compression;
 pub mod connection;
+pub mod scaling;
 
 /// Service related packets.
 /// This contains things like service registration, and service discovery.

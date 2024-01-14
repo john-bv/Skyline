@@ -1,5 +1,7 @@
 use binary_util::{types::varu32, BinaryIo};
 
+use super::scaling::shard::Shard;
+
 /// This packet can be sent by the server or by the client.
 /// Both represent the same thing, but the server will send this packet
 /// to the client when the client should gracefully disconnect.
@@ -42,7 +44,7 @@ pub struct LoginResponse {
 pub struct LoginResponseMeta {
     /// The name the identifier the server has assigned to the client.
     /// This is unique and will always point to the same client.
-    pub id: varu32,
+    pub id: String,
     /// The name the server has assigned to the client.
     /// This is unique and will always point to the same client.
     pub name: String,
@@ -50,6 +52,9 @@ pub struct LoginResponseMeta {
     /// please note the server DOES allow duplicates, so if you send "EU-1" here, you will get "EU-2" back.
     /// If EU-1 is already taken.
     pub identifiers: Vec<String>,
+    /// The shard the client is connected to.
+    /// This is used to determine which shard the client has access too.
+    pub shard: Shard,
 }
 
 #[derive(Debug, Clone, Copy, BinaryIo, PartialEq, Eq, Hash)]

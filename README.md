@@ -1,5 +1,5 @@
 # Skyline
-A binary based message broker designed to be light-weight and versatile over other solutions like RabbitMQ or Kafka.
+A binary based load balancer, and message broker designed to be light-weight and versatile over other solutions like RabbitMQ or Kafka.
 
 This repository contains the following crates:
 - [`protocol`](./protocol) - The protocol definitions for Skyline, which is used by both the server and client to communicate with each other.
