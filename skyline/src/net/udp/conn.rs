@@ -28,6 +28,8 @@ use tokio::{
     task::JoinHandle,
 };
 
+use crate::net::ConnState;
+
 pub(crate) type ConnNetChan = Arc<Mutex<Receiver<Vec<u8>>>>;
 
 #[derive(Debug, PartialEq)]
@@ -63,6 +65,13 @@ impl Conn {
         cleanup: Arc<Sender<SocketAddr>>,
         mtu: u16,
     ) -> Self {
+        todo!();
+        // Self {
+        //     addr,
+        //     state: Mutex::new(ConnState::Offline),
+        //     socket: socket.clone(),
+        //     network_recv: Arc::new(Mutex::new(tokio::sync::mpsc::channel(1).1)),
+        // }
     }
 
     /// This thread will handle the connection tick.

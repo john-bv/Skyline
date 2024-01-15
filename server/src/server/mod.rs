@@ -22,7 +22,7 @@ pub struct Server {
     mode: NetworkMode,
     pub close: Arc<Notify>,
     config: crate::config::Config,
-    interface: Box<dyn crate::net::NetworkInterface>,
+    interface: Arc<TokioMutex<Box<dyn crate::net::NetworkInterface>>>,
     peer_manager: Arc<TokioMutex<PeerManager>>
 }
 
@@ -39,7 +39,7 @@ impl Server {
                 NetworkMode::Tcp => {
                     log_debug!("TCP mode selected, binding to {}", bind_address);
                     log_warn!("TCP mode selected by config file, with multiple clients (over 200) this may cause performance issues.");
-                    Box::new(crate::net::tcp::TcpListener::new(bind_address.as_str()).await?)
+                    Arc::new(TokioMutex::new(Box::new(crate::net::tcp::TcpListener::new(bind_address.as_str()).await?)))
                 }
                 // NetworkMode::Udp => Box::new(crate::net::udp::UdpListener::new(address)?),
                 _ => {
@@ -47,7 +47,7 @@ impl Server {
                         "Unsupported network mode: {}, attempting to start anyway...",
                         mode
                     );
-                    Box::new(crate::net::NullInterface::new(bind_address.as_str()).await?)
+                    Arc::new(TokioMutex::new(Box::new(crate::net::NullInterface::new(bind_address.as_str()).await?)))
                 }
             },
             peer_manager: Arc::new(TokioMutex::new(PeerManager::new()))
@@ -55,14 +55,15 @@ impl Server {
     }
 
     pub async fn bind(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        if self.interface.get_name() == "null" {
+        let mut interface = self.interface.lock().await;
+        if interface.get_name() == "null" {
             log_debug!("Refusing to bind: null interface");
             log_error!("Skyline ran into an error while binding to the interface.");
             log_error!("Please check your configuration and try again.");
             std::process::exit(1);
         }
 
-        self.interface.bind().await?;
+        interface.bind().await?;
 
         Ok(())
     }
@@ -78,44 +79,54 @@ impl Server {
         let close_notifier = self.close.clone();
 
         // network recv clients
+        let net_interface = self.interface.clone();
+        tokio::task::spawn(async move {
+            loop {
+                let mut interface = net_interface.lock().await;
+                tokio::select! {
+                    _ = close_notifier.notified() => {
+                        log_notice!("Closing...");
+                        break;
+                    }
+                    conn = interface.accept() => {
+                        match conn {
+                            Ok(ref conn) => {
+                                log_debug!("Accepted connection from {}", conn.get_addr());
+                            }
+                            Err(e) => {
+                                log_debug!("Failed to accept connection: {}", e);
+                                continue;
+                            }
+                        };
+                        // create a new peer with this connection
+                        let closer = close_notifier.clone();
 
-        loop {
-            tokio::select! {
-                _ = close_notifier.notified() => {
-                    log_notice!("Closing...");
-                    break;
-                }
-                conn = self.interface.accept() => {
-                    match conn {
-                        Ok(ref conn) => {
-                            log_debug!("Accepted connection from {}", conn.get_addr());
-                        }
-                        Err(e) => {
-                            log_debug!("Failed to accept connection: {}", e);
-                            continue;
-                        }
-                    };
-                    // create a new peer with this connection
-                    let closer = self.close.clone();
+                        let conn = conn.unwrap();
+                        let peer = Box::new(Peer::init(conn, closer).await);
 
-                    let conn = conn.unwrap();
-                    let peer = Box::new(Peer::init(conn, closer).await);
-
-                    let manager = peer_manager.clone();
-                    let mut manager = manager.lock().await;
-                    manager.add_peer(peer);
+                        let manager = peer_manager.clone();
+                        let mut manager = manager.lock().await;
+                        manager.add_peer(peer);
+                    }
                 }
             }
-        }
+        });
         Ok(())
     }
 
+    /// This is sync cause we should be able to call it from anywhere.
+    /// It will close the server, and will wait for all the tasks to finish.
+    ///
+    /// **THIS IS A BLOCKING CALL, MAIN THREAD WILL BE BLOCKED UNTIL ALL TASKS ARE FINISHED.**
     pub fn stop(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         self.close.notify_waiters();
         let handle = tokio::runtime::Handle::current();
-        if let Err(_) = handle.block_on(self.interface.close()) {
+        let interface = self.interface.clone();
+        if let Err(_) = handle.block_on(async move {
+            interface.lock().await.close().await
+        }) {
             log_error!("Failed to close network interface.");
-        };
+        }
 
         Ok(())
     }

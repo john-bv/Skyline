@@ -4,3 +4,5 @@
 /// While the server will use server specific functions, the client will use
 /// mainly the channel query functions.
 pub mod channel;
+/// The protocol layer implementation for Skyline.
+pub mod layer;

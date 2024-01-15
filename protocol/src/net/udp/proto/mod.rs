@@ -5,7 +5,7 @@ use binary_util::BinaryIo;
 use self::{offline::OfflinePackets, online::OnlinePackets};
 
 pub const GUEST_UUID: &str = "00000000-0000-0000-0000-000000000000";
-// proto magic: IP + UDP + ZEQA_DISPATCH:1.0.0 + DatasetOverhead
+// proto magic: IP + UDP + SKYLINE:1.0.0 + DatasetOverhead
 // datasetoverhead = 1 (flags) + 4 (seq) + 2 (sid) + 4 (stotal) + 4 (sindex) + 2 (oid) + 4 (oindex) + 4 (payload length) = 25
 pub const MAX_PROTO_OVERHEAD: u16 = 20 + 8 + 4 + 25;
 

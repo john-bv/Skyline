@@ -6,6 +6,15 @@ use binary_util::{
 use super::{Channel, ChannelPermission, ChannelResponseStatus};
 
 #[derive(Debug, Clone, BinaryIo)]
+#[repr(u8)]
+pub enum ChannelPackets {
+    ChannelJoinRequest(ChannelJoinRequest),
+    ChannelJoinResponse(ChannelJoinResponse),
+    ChannelPermissionUpdate(ChannelPermissionUpdate),
+    ChannelMessage(ChannelMessage),
+}
+
+#[derive(Debug, Clone, BinaryIo)]
 pub struct ChannelJoinRequest {
     /// The ID of the channel.
     pub channel_id: u16,

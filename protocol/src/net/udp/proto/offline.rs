@@ -3,7 +3,7 @@ use binary_util::{
     BinaryIo,
 };
 
-/// This is the "magic" or protocol identifier for the ZEQ protocol.
+/// This is the "magic" or protocol identifier for the Skyline protocol.
 pub const SKYLINE_HEADER: &[u8] = b"SKYLINE_1.0.0";
 
 /// This is the header that is sent by the server to the client.

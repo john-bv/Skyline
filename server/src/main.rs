@@ -52,6 +52,7 @@ async fn main() {
     }
 
     // start the server
+    // this is now happening concurrently
     match server.start().await {
         Ok(_) => {}
         Err(e) => {
@@ -61,6 +62,8 @@ async fn main() {
     }
 
     // at this point the server is running
+    // wait until the server is closed before continuing
+    server.close.notified().await;
     log_success!("Stopped.");
 
     ()

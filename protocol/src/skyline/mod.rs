@@ -27,4 +27,5 @@ pub enum SkylinePacket {
     Disconnect(connection::Disconnect) = 1,
     LoginPacket(connection::LoginPacket),
     LoginResponse(connection::LoginResponse),
+    ChannelPacket(channel::packets::ChannelPackets),
 }
