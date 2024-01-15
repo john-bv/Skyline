@@ -1,10 +1,13 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
-use tokio::sync::Notify;
+use tokio::{sync::Notify, task::JoinHandle};
+use tokio::sync::Mutex as TokioMutex;
 
 use crate::{
-    config::NetworkMode, log_debug, log_error, log_notice, log_success, log_warn,
+    config::NetworkMode,
+    log_debug, log_error, log_notice, log_success, log_warn,
     net::NetworkInterface,
+    peer::{Peer, PeerManager},
 };
 
 use colored::*;
@@ -20,6 +23,7 @@ pub struct Server {
     pub close: Arc<Notify>,
     config: crate::config::Config,
     interface: Box<dyn crate::net::NetworkInterface>,
+    peer_manager: Arc<TokioMutex<PeerManager>>
 }
 
 impl Server {
@@ -46,6 +50,7 @@ impl Server {
                     Box::new(crate::net::NullInterface::new(bind_address.as_str()).await?)
                 }
             },
+            peer_manager: Arc::new(TokioMutex::new(PeerManager::new()))
         })
     }
 
@@ -69,9 +74,14 @@ impl Server {
 
         log_success!("Skyline is now listening on port {}.", self.config.port);
 
+        let peer_manager = self.peer_manager.clone();
+        let close_notifier = self.close.clone();
+
+        // network recv clients
+
         loop {
             tokio::select! {
-                _ = self.close.notified() => {
+                _ = close_notifier.notified() => {
                     log_notice!("Closing...");
                     break;
                 }
@@ -88,12 +98,12 @@ impl Server {
                     // create a new peer with this connection
                     let closer = self.close.clone();
 
-                    // Peer::init(conn, closer).await;
+                    let conn = conn.unwrap();
+                    let peer = Box::new(Peer::init(conn, closer).await);
 
-                    tokio::task::spawn(async move {
-                        println!("Hello, world!");
-                        conn.unwrap();
-                    });
+                    let manager = peer_manager.clone();
+                    let mut manager = manager.lock().await;
+                    manager.add_peer(peer);
                 }
             }
         }

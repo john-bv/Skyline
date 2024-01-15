@@ -1,4 +1,4 @@
-use binary_util::{BinaryIo, types::varu32};
+use binary_util::{types::varu32, BinaryIo};
 
 use crate::skyline::api::value::ValueIds;
 
@@ -124,7 +124,7 @@ pub struct ApiField {
     /// This could be a custom type, defined by the service.
     pub value: u16,
     /// Whether or not this field is optional.
-    pub optional: bool
+    pub optional: bool,
 }
 
 #[derive(Debug, Clone, BinaryIo)]

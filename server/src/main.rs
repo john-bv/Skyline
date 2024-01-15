@@ -2,10 +2,11 @@ use relative_path::RelativePath;
 use skyline::net;
 use skyline::{log_debug, log_error, log_info, log_notice, log_success, log_warn};
 
+mod channel;
 mod config;
 mod peer;
-mod channel;
 mod server;
+mod util;
 
 #[tokio::main]
 async fn main() {

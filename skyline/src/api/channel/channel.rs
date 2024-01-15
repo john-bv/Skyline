@@ -2,8 +2,6 @@ use tokio::sync::mpsc::Sender;
 
 use crate::net::ConnAdapter;
 
-
-
 pub struct Channel {
     pub peers: Vec<Box<dyn ConnAdapter>>,
     pub name: String,

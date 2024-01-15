@@ -1,4 +1,7 @@
-use binary_util::{BinaryIo, types::{varu32, varu64}};
+use binary_util::{
+    types::{varu32, varu64},
+    BinaryIo,
+};
 
 pub mod api;
 pub mod packets;

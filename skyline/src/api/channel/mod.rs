@@ -1,6 +1,6 @@
 pub mod channel;
 
-use std::{sync::Arc, any::Any, cell::RefCell, collections::HashMap, hash::Hash};
+use std::{any::Any, cell::RefCell, collections::HashMap, hash::Hash, sync::Arc};
 
 use self::channel::Channel;
 
@@ -22,9 +22,7 @@ impl ChannelPool {
         }
     }
 
-    pub fn digest(&mut self, message: Vec<u8>) {
-
-    }
+    pub fn digest(&mut self, message: Vec<u8>) {}
 
     pub fn add_channel(&mut self, channel: Box<Channel>) {
         let mut chans = self.channels.borrow_mut();

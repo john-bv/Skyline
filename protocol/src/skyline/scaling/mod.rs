@@ -1,2 +1,2 @@
-pub mod shard;
 pub mod cluster;
+pub mod shard;

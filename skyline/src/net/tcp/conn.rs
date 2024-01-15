@@ -377,6 +377,62 @@ impl Conn {
             }
         }
     }
+
+    async fn send_raw(
+        socket: &Arc<tokio::net::TcpStream>,
+        splits: &mut HashMap<u16, (SystemTime, Vec<SplitPacket>)>,
+        buf: &[u8],
+    ) -> std::io::Result<()> {
+        if buf.len() >= (1024 - 60 - 12 - 100) {
+            // remove old splits
+            for (id, (time, _)) in splits.clone() {
+                if time.elapsed().unwrap().as_secs() > 10 {
+                    splits.remove(&id);
+                }
+            }
+
+            // get next available id
+            let next = splits.len() + 1;
+            let split_pks = SplitPacket::split(next as u16, buf).unwrap();
+            splits.insert(next as u16, (SystemTime::now(), split_pks.clone()));
+
+            for split_pk in split_pks {
+                let x = Messages::SplitPacket(split_pk).write_to_bytes().unwrap();
+                let bin = x.as_slice();
+
+                if let Err(_) = socket.writable().await {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        "Write Error",
+                    ));
+                }
+
+                let frame = protocol::net::tcp::Frame::new(bin.to_vec())
+                    .write_to_bytes()
+                    .unwrap();
+                if let Err(_) = socket.try_write(&frame.as_slice()) {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        "Write Error",
+                    ));
+                }
+            }
+
+            return Ok(());
+        } else {
+            let frame = protocol::net::tcp::Frame::new(buf.to_vec())
+                .write_to_bytes()
+                .unwrap();
+            if let Err(_) = socket.try_write(&frame.as_slice()) {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Write Error",
+                ));
+            } else {
+                return Ok(());
+            }
+        }
+    }
 }
 
 #[async_trait]
@@ -420,6 +476,25 @@ impl ConnAdapter for Conn {
         let mut splits = self.splits.write().await;
 
         if let Err(_) = Self::send_packet(&self.socket, &mut splits, message).await {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Write Error",
+            ));
+        }
+
+        return Ok(());
+    }
+
+    async fn send_raw(&self, buf: &[u8]) -> std::io::Result<()> {
+        let mut splits = self.splits.write().await;
+
+        if let Err(_) = Self::send_packet(
+            &self.socket,
+            &mut splits,
+            Messages::Payload(Payload { data: buf.to_vec() }),
+        )
+        .await
+        {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "Write Error",

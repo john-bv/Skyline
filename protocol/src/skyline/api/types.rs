@@ -27,10 +27,7 @@ impl SkylineHashMap {
     }
 
     pub fn get_mut(&mut self, key: &Value) -> Option<&mut Value> {
-        self.map
-            .iter_mut()
-            .find(|(k, _)| k == key)
-            .map(|(_, v)| v)
+        self.map.iter_mut().find(|(k, _)| k == key).map(|(_, v)| v)
     }
 
     pub fn remove(&mut self, key: &Value) -> Option<Value> {

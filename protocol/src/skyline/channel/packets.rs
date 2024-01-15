@@ -1,4 +1,7 @@
-use binary_util::{BinaryIo, types::{varu32, varu64}};
+use binary_util::{
+    types::{varu32, varu64},
+    BinaryIo,
+};
 
 use super::{Channel, ChannelPermission, ChannelResponseStatus};
 
@@ -32,7 +35,6 @@ pub struct ChannelPermissionUpdate {
     /// The permissions of the topic.
     pub permissions: ChannelPermission,
 }
-
 
 /// This packet is sent either by a peer or the server.
 /// This is a message sent to a specific peer on a channel

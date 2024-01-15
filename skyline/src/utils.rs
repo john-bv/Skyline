@@ -1,5 +1,8 @@
 #![allow(dead_code)]
-use std::net::SocketAddr;
+use std::{
+    io,
+    net::{SocketAddr, ToSocketAddrs},
+};
 
 /// This is a helper enum that allows you to pass in a `SocketAddr` or a `&str` to the `Listener::bind` function.
 /// This is useful for when you want to bind to a specific address, but you don't want to parse it yourself.
@@ -66,6 +69,22 @@ pub fn current_epoch() -> u64 {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_secs()
+}
+
+/// Converts a address from the struct to a token str with the looks of somethign like this:
+/// `127.0.0.1:138473`
+pub fn to_address_token(addr: std::net::SocketAddr) -> String {
+    let mut address = addr.ip().to_string();
+    address.push_str(":");
+    address.push_str(addr.port().to_string().as_str());
+    return address;
+}
+
+/// Converts a address token to a `SocketAddr` struct.
+/// This is useful for when you want to parse a address from a config file.
+pub fn from_address_token(token: String) -> io::Result<std::net::SocketAddr> {
+    let mut parsed = token.to_socket_addrs()?;
+    Ok(SocketAddr::from(parsed.next().unwrap()))
 }
 
 #[macro_export]
