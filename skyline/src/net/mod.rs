@@ -1,6 +1,6 @@
 // #[cfg(feature = "udp")]
 pub mod udp;
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
 
 use crate::utils::to_address_token;
 
@@ -81,7 +81,7 @@ pub trait NetworkInterface: Send + Sync {
 
     /// Accepts a new connection from the listener.
     /// The connection is passed on to the caller
-    async fn accept(&mut self) -> std::io::Result<Box<dyn ConnAdapter>>;
+    async fn accept(&mut self) -> std::io::Result<Arc<std::sync::Mutex<dyn ConnAdapter>>>;
 
     /// Closes the listener forcefully, the listener is assumed to be disbanded after this.
     /// This will close all connections associated with the listener.
@@ -104,7 +104,7 @@ impl NetworkInterface for NullInterface {
         Ok(())
     }
 
-    async fn accept(&mut self) -> std::io::Result<Box<dyn ConnAdapter>> {
+    async fn accept(&mut self) -> std::io::Result<Arc<std::sync::Mutex<dyn ConnAdapter>>> {
         Err(std::io::Error::new(
             std::io::ErrorKind::Other,
             "NullInterface does not accept connections",

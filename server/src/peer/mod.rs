@@ -1,5 +1,5 @@
 use protocol::skyline::SkylinePacket;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tokio::sync::Notify;
 
 use crate::net::ConnAdapter;
@@ -20,8 +20,9 @@ impl PeerManager {
     }
 
     pub fn remove_peer(&mut self, peer: Box<Peer>) {
+        let inner = peer.inner.lock().unwrap();
         self.peers
-            .retain(|p| p.inner.get_addr_token() != peer.inner.get_addr_token());
+            .retain(|p| p.inner.lock().unwrap().get_addr_token() != inner.get_addr_token());
     }
 
     pub fn get_peers(&self) -> &Vec<Box<Peer>> {
@@ -34,25 +35,25 @@ impl PeerManager {
 }
 
 pub struct Peer {
-    inner: Box<dyn ConnAdapter>,
+    inner: Arc<Mutex<dyn ConnAdapter>>,
     closer: Arc<Notify>,
 }
 
 impl Peer {
     pub async fn close(
-        &mut self,
+        &self,
         reason: protocol::skyline::connection::DisconnectReason,
     ) -> std::io::Result<()> {
-        self.inner.close(reason).await?;
+        self.inner.lock().unwrap().close(reason).await?;
         Ok(())
     }
 
     pub async fn send_raw(&mut self, packet: &SkylinePacket) -> std::io::Result<()> {
-        self.inner.send(packet).await?;
+        self.inner.lock().unwrap().send(packet).await?;
         Ok(())
     }
 
-    pub async fn init(inner: Box<dyn ConnAdapter>, closer: Arc<Notify>) -> Self {
+    pub async fn init(inner: Arc<Mutex<dyn ConnAdapter>>, closer: Arc<Notify>) -> Self {
         Self { inner, closer }
     }
 }

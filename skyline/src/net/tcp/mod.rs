@@ -2,7 +2,7 @@
 pub mod client;
 pub mod conn;
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 use tokio::sync::Notify;
@@ -52,10 +52,10 @@ impl NetworkInterface for TcpListener {
         Ok(())
     }
 
-    async fn accept(&mut self) -> std::io::Result<Box<dyn super::ConnAdapter>> {
+    async fn accept(&mut self) -> std::io::Result<Arc<Mutex<dyn super::ConnAdapter>>> {
         let stream = self.internal_accept().await?;
         let conn = conn::Conn::new(stream);
-        Ok(Box::new(conn))
+        Ok(Arc::new(Mutex::new(conn)))
     }
 
     async fn close(&mut self) -> std::io::Result<()> {

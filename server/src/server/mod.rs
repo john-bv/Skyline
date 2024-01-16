@@ -91,7 +91,7 @@ impl Server {
                     conn = interface.accept() => {
                         match conn {
                             Ok(ref conn) => {
-                                log_debug!("Accepted connection from {}", conn.get_addr());
+                                log_debug!("Accepted connection from {}", conn.lock().unwrap().get_addr());
                             }
                             Err(e) => {
                                 log_debug!("Failed to accept connection: {}", e);
