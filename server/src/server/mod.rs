@@ -102,11 +102,15 @@ impl Server {
                         let closer = close_notifier.clone();
 
                         let conn = conn.unwrap();
-                        let peer = Box::new(Peer::init(conn, closer).await);
-
                         let manager = peer_manager.clone();
                         let mut manager = manager.lock().await;
-                        manager.add_peer(peer);
+                        let next_id = manager.get_next_id();
+                        let peer = Peer::init(conn, closer, 0).await;
+                        
+                        // if let Err(_) = manager.add_peer(peer).await {
+                        //     log_error!("Failed to add peer to manager.");
+                        //     // close the peer
+                        // }
                     }
                 }
             }

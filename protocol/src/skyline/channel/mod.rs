@@ -17,7 +17,7 @@ pub mod packets;
 /// For example, if you subscribe to the "chat" channel, you will receive all chat packets.
 /// however if the channel has a "topic" of "guild", you will only receive guild chat packets.
 #[derive(Debug, Clone, BinaryIo)]
-pub struct Channel {
+pub struct ChannelInfo {
     /// This is the ID of the channel,
     /// It's used to identify the channel.
     pub id: u16,

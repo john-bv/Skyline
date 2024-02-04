@@ -89,6 +89,8 @@ pub enum DisconnectReason {
     Disband,
     /// The token for the client is no longer valid.
     InvalidToken,
+    /// conflict with another client id
+    Conflict,
     #[deprecated(note = "Use InvalidToken instead")]
     InvalidName,
     InvalidIdentifiers,

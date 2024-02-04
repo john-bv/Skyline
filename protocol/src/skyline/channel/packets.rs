@@ -3,7 +3,7 @@ use binary_util::{
     BinaryIo,
 };
 
-use super::{Channel, ChannelPermission, ChannelResponseStatus};
+use super::{ChannelInfo, ChannelPermission, ChannelResponseStatus};
 
 #[derive(Debug, Clone, BinaryIo)]
 #[repr(u8)]
@@ -25,7 +25,7 @@ pub struct ChannelJoinResponse {
     /// The ID of the channel.
     pub status: ChannelResponseStatus,
     #[satisfy(self.status == ChannelResponseStatus::Ok)]
-    pub channel: Option<Channel>,
+    pub channel: Option<ChannelInfo>,
     /// The permissions you have on the channel.
     /// Not really important for the client, but is sent by the server
     /// as a way to tell the client what permissions it has on the channel.
