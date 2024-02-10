@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
-use tokio::{sync::Notify, task::JoinHandle};
 use tokio::sync::Mutex as TokioMutex;
+use tokio::{sync::Notify, task::JoinHandle};
 
 use crate::{
     config::NetworkMode,
@@ -23,7 +23,7 @@ pub struct Server {
     pub close: Arc<Notify>,
     config: crate::config::Config,
     interface: Arc<TokioMutex<Box<dyn crate::net::NetworkInterface>>>,
-    peer_manager: Arc<TokioMutex<PeerManager>>
+    peer_manager: Arc<TokioMutex<PeerManager>>,
 }
 
 impl Server {
@@ -39,7 +39,9 @@ impl Server {
                 NetworkMode::Tcp => {
                     log_debug!("TCP mode selected, binding to {}", bind_address);
                     log_warn!("TCP mode selected by config file, with multiple clients (over 200) this may cause performance issues.");
-                    Arc::new(TokioMutex::new(Box::new(crate::net::tcp::TcpListener::new(bind_address.as_str()).await?)))
+                    Arc::new(TokioMutex::new(Box::new(
+                        crate::net::tcp::TcpListener::new(bind_address.as_str()).await?,
+                    )))
                 }
                 // NetworkMode::Udp => Box::new(crate::net::udp::UdpListener::new(address)?),
                 _ => {
@@ -47,10 +49,12 @@ impl Server {
                         "Unsupported network mode: {}, attempting to start anyway...",
                         mode
                     );
-                    Arc::new(TokioMutex::new(Box::new(crate::net::NullInterface::new(bind_address.as_str()).await?)))
+                    Arc::new(TokioMutex::new(Box::new(
+                        crate::net::NullInterface::new(bind_address.as_str()).await?,
+                    )))
                 }
             },
-            peer_manager: Arc::new(TokioMutex::new(PeerManager::new()))
+            peer_manager: Arc::new(TokioMutex::new(PeerManager::new())),
         })
     }
 
@@ -91,7 +95,7 @@ impl Server {
                     conn = interface.accept() => {
                         match conn {
                             Ok(ref conn) => {
-                                log_debug!("Accepted connection from {}", conn.lock().unwrap().get_addr());
+                                log_debug!("Accepted connection from {}", conn.get_addr());
                             }
                             Err(e) => {
                                 log_debug!("Failed to accept connection: {}", e);
@@ -106,11 +110,11 @@ impl Server {
                         let mut manager = manager.lock().await;
                         let next_id = manager.get_next_id();
                         let peer = Peer::init(conn, closer, 0).await;
-                        
-                        // if let Err(_) = manager.add_peer(peer).await {
-                        //     log_error!("Failed to add peer to manager.");
-                        //     // close the peer
-                        // }
+
+                        if let Err(_) = manager.add_peer(peer).await {
+                            log_error!("Failed to add peer to manager.");
+                            // close the peer
+                        }
                     }
                 }
             }
@@ -126,9 +130,7 @@ impl Server {
         self.close.notify_waiters();
         let handle = tokio::runtime::Handle::current();
         let interface = self.interface.clone();
-        if let Err(_) = handle.block_on(async move {
-            interface.lock().await.close().await
-        }) {
+        if let Err(_) = handle.block_on(async move { interface.lock().await.close().await }) {
             log_error!("Failed to close network interface.");
         }
 

@@ -4,7 +4,6 @@ use tokio::sync::RwLock;
 
 use crate::client::Client;
 
-
 pub mod client;
 pub mod server;
 

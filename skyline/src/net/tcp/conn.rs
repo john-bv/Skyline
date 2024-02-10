@@ -9,7 +9,7 @@ use binary_util::ByteReader;
 use protocol::net::tcp::{Disconnect, HeartbeatAck, Hello, Messages, Payload, SplitPacket};
 use protocol::skyline::{connection::DisconnectReason, SkylinePacket};
 use protocol::util::current_epoch;
-use tokio::sync::{Notify, RwLock};
+use tokio::sync::{Mutex, Notify, RwLock};
 
 use colored::*;
 
@@ -23,12 +23,12 @@ pub struct Conn {
     pub state: ConnState,
     close_notifier: Arc<Notify>,
     /// Single channel for digesting skyline packets.
-    net_rx: tokio::sync::mpsc::Receiver<SkylinePacket>,
+    net_rx: Mutex<tokio::sync::mpsc::Receiver<SkylinePacket>>,
     socket: Arc<tokio::net::TcpStream>,
     /// This is a queue of sent packets that have been split.
     splits: Arc<RwLock<HashMap<u16, (SystemTime, Vec<SplitPacket>)>>>,
     /// Tasks that are spawned by this connection.
-    tasks: Vec<tokio::task::JoinHandle<()>>,
+    tasks: Arc<Mutex<Vec<tokio::task::JoinHandle<()>>>>,
 }
 
 impl Conn {
@@ -166,10 +166,10 @@ impl Conn {
             addr: addr,
             state: ConnState::Connecting,
             close_notifier,
-            net_rx: pak_rx,
+            net_rx: Mutex::new(pak_rx),
             socket: self_socket,
             splits: recv_splits,
-            tasks,
+            tasks: Arc::new(Mutex::new(tasks)),
         }
     }
 
@@ -437,7 +437,7 @@ impl Conn {
 
 #[async_trait]
 impl ConnAdapter for Conn {
-    async fn close(&mut self, reason: DisconnectReason) -> std::io::Result<()> {
+    async fn close(&self, reason: DisconnectReason) -> std::io::Result<()> {
         self.close_notifier.notify_waiters();
         let disconnect = protocol::skyline::connection::Disconnect { reason };
 
@@ -447,7 +447,9 @@ impl ConnAdapter for Conn {
         ))
         .await?;
 
-        for task in self.tasks.drain(..) {
+        let mut tasks = self.tasks.lock().await;
+
+        for task in tasks.drain(..) {
             task.abort();
         }
         Ok(())
@@ -504,8 +506,10 @@ impl ConnAdapter for Conn {
         return Ok(());
     }
 
-    async fn recv(&mut self) -> Result<protocol::skyline::SkylinePacket, std::io::Error> {
-        let packet = self.net_rx.recv().await;
+    async fn recv(&self) -> Result<protocol::skyline::SkylinePacket, std::io::Error> {
+        let mut recv_lock = self.net_rx.lock().await;
+        let packet = recv_lock.recv().await;
+
         if let Some(packet) = packet {
             return Ok(packet);
         }

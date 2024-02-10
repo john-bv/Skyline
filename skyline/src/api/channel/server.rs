@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc};
 
 use crate::net::ConnAdapter;
 
@@ -16,7 +16,6 @@ impl Channel {
     }
 }
 
-
 /// ## Server Channel Pool
 /// A channel Pool is a collection of channels.
 /// You can think of it as Multiple channels on a single server.
@@ -27,13 +26,13 @@ impl Channel {
 #[derive(Clone)]
 pub struct ChannelPool {
     // cursed lmao
-    pub channels: Rc<RefCell<HashMap<String, Box<Channel>>>>,
+    pub channels: Arc<RefCell<HashMap<String, Box<Channel>>>>,
 }
 
 impl ChannelPool {
     pub fn new() -> Self {
         Self {
-            channels: Rc::new(RefCell::new(HashMap::new())),
+            channels: Arc::new(RefCell::new(HashMap::new())),
         }
     }
 

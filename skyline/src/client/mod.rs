@@ -24,5 +24,5 @@ pub use node::Node;
 #[repr(u8)]
 pub enum ConnectionNetworkMode {
     Tcp,
-    Udp
+    Udp,
 }

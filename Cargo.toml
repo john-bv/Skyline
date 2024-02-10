@@ -3,5 +3,17 @@ resolver = "2"
 members = [
     "protocol",
     "server",
+    "client",
     "skyline",
 ]
+
+[workspace.dependencies]
+tokio = { version = "1.27.0", features = ["full"] }
+binary-util = { git = "https://github.com/NetrexMC/binary-utils.git", branch = "master" }
+async-trait = "0.1.73"
+async-recursion = "1.0.5"
+dotenv = "0.15.0"
+relative-path = "1.9.0"
+serde_yaml = "0.9.25"
+serde = { version = "1.0.188", features = ["derive"] }
+colored = "2"

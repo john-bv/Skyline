@@ -25,7 +25,7 @@ impl TcpListener {
         })
     }
 
-    async fn internal_accept(&mut self) -> std::io::Result<tokio::net::TcpStream> {
+    async fn internal_accept(&self) -> std::io::Result<tokio::net::TcpStream> {
         let (stream, _) = self.listener.accept().await?;
         Ok(stream)
     }
@@ -52,10 +52,10 @@ impl NetworkInterface for TcpListener {
         Ok(())
     }
 
-    async fn accept(&mut self) -> std::io::Result<Arc<Mutex<dyn super::ConnAdapter>>> {
+    async fn accept(&self) -> std::io::Result<Arc<dyn super::ConnAdapter>> {
         let stream = self.internal_accept().await?;
         let conn = conn::Conn::new(stream);
-        Ok(Arc::new(Mutex::new(conn)))
+        Ok(Arc::new(conn))
     }
 
     async fn close(&mut self) -> std::io::Result<()> {

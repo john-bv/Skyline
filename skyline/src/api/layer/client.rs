@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
-use protocol::skyline::{SkylinePacket, channel::packets::ChannelPackets};
-use anyhow::Result;
 use crate::{client::ConnectionNetworkMode, net::ConnAdapter};
+use anyhow::Result;
+use async_trait::async_trait;
+use protocol::skyline::{channel::packets::ChannelPackets, SkylinePacket};
 
 use crate::api::channel::client::ChannelPool;
 

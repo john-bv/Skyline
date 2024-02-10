@@ -38,12 +38,12 @@ pub enum ConnState {
 pub trait ConnAdapter: Send + Sync {
     /// Returns the current state of the connection.
     /// Closes the connection forcefully, the connection is assumed to be disbanded after this.
-    async fn close(&mut self, reason: DisconnectReason) -> std::io::Result<()>;
+    async fn close(&self, reason: DisconnectReason) -> std::io::Result<()>;
     /// Sends a skyline packet to the connection.
     async fn send(&self, packet: &protocol::skyline::SkylinePacket) -> std::io::Result<()>;
     /// Recieves a skyline packet from the connection.
     /// This function will block until a packet is recieved.
-    async fn recv(&mut self) -> std::io::Result<protocol::skyline::SkylinePacket>;
+    async fn recv(&self) -> std::io::Result<protocol::skyline::SkylinePacket>;
     /// Sends an arbitrary TCP message to the connection.
     // todo: REMOVE THIS
     async fn send_message(&self, data: protocol::net::tcp::Messages) -> std::io::Result<()>;
@@ -81,7 +81,7 @@ pub trait NetworkInterface: Send + Sync {
 
     /// Accepts a new connection from the listener.
     /// The connection is passed on to the caller
-    async fn accept(&mut self) -> std::io::Result<Arc<std::sync::Mutex<dyn ConnAdapter>>>;
+    async fn accept(&self) -> std::io::Result<Arc<dyn ConnAdapter>>;
 
     /// Closes the listener forcefully, the listener is assumed to be disbanded after this.
     /// This will close all connections associated with the listener.
@@ -104,7 +104,7 @@ impl NetworkInterface for NullInterface {
         Ok(())
     }
 
-    async fn accept(&mut self) -> std::io::Result<Arc<std::sync::Mutex<dyn ConnAdapter>>> {
+    async fn accept(&self) -> std::io::Result<Arc<dyn ConnAdapter>> {
         Err(std::io::Error::new(
             std::io::ErrorKind::Other,
             "NullInterface does not accept connections",

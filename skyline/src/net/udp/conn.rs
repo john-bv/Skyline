@@ -109,6 +109,7 @@ impl Conn {
                     _ = notifier.notified() => {
                         break;
                     },
+
                     res = socket.recv_from(&mut buf) => {
                         // process the packet
                         // if it's a connection packet, process it.

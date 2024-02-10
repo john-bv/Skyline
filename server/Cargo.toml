@@ -18,15 +18,15 @@ debug = []
 default = ["tcp"]
 
 [dependencies]
-tokio = { version = "1.27.0", features = ["full"] }
+tokio = { workspace = true }
 skyline = { path = '../skyline' }
 protocol = { path = "../protocol" }
-binary-util = { git = "https://github.com/NetrexMC/binary-utils.git", branch = "master" }
-async-trait = "0.1.73"
-async-recursion = "1.0.5"
-dotenv = "0.15.0"
-relative-path = "1.9.0"
-serde_yaml = "0.9.25"
-serde = { version = "1.0.188", features = ["derive"] }
-colored = "2"
+binary-util = { workspace = true }
+async-trait = { workspace = true }
+async-recursion = { workspace = true }
+dotenv = { workspace = true }
+relative-path = { workspace = true }
+serde_yaml = { workspace = true }
+serde = { workspace = true }
+colored = { workspace = true }
 ctrlc = "3.4.1"
