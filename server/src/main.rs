@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use relative_path::RelativePath;
 use skyline::net;
 use skyline::{log_debug, log_error, log_info, log_notice, log_success, log_warn};
@@ -93,10 +95,17 @@ fn bootstrap() -> std::io::Result<(self::config::Config, u8)> {
             "Could not find .env.example in {}, creating it...",
             locale.to_str().unwrap()
         );
+
+        let default_env_example = include_str!("../resources/.env.example");
+
         match std::fs::File::create(RelativePath::new(".env.example").to_path(&locale)) {
-            Ok(_) => {
+            Ok(mut f) => {
                 log_debug!("Successfully created .env.example");
                 log_debug!("Storing random secrets in .env.example");
+
+                if let Err(_) = f.write_all(default_env_example.as_bytes()) {
+                    log_debug!("Failed to write to .env.example");
+                }
             }
             Err(e) => {
                 log_error!("Failed to create .env.example. Please fix this issue and retry...\n -> Reason: {}", e);

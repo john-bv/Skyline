@@ -11,8 +11,8 @@ default = ["tcp"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-binary-util = { git = "https://github.com/NetrexMC/binary-utils.git", branch = "master" }
-tokio = { version = "1.27.0", features = ["net"] }
+binary-util = { workspace = true }
+tokio = { workspace = true }
 
 # [dev-dependencies]
 # tokio = { version = "1.27.0", features = ["full"] }

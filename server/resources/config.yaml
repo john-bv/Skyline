@@ -2,6 +2,17 @@
 # This is how you will connect as a client.
 port: 24833
 
+# Dashboard settings
+dashboard:
+  # Whether or not to enable the dashboard
+  enabled: true
+  # The port to run the dashboard on
+  port: 8080
+  # The default admin username for the dashboard
+  username: "admin"
+  # The default password for the dashboard (RESET AFTER FIRST LOGIN, TO RESET, DELETE THE CREDENTIALS FILE)
+  password: "skyline24833"
+
 # Cluster settings
 cluster:
   # Whether or not to enable clustering
@@ -11,29 +22,30 @@ cluster:
   # The maximum number of nodes to allow in the cluster
   maxNodes: 10
 
+# Database options for authorization
+database:
+    # Valid strategies include:
+    # - "local" (for testing, not recommended for production)
+    # - "mongo"
+    # - "postgres" (default)
+    # - "mysql"
+    provider: "postgres"
+    # If the strategy is "local", this is the path to the local file
+    host: "./"
+    # Port of the strategy
+    port: 6379
+    # Auth of the strategy (if any)
+    # Username in the case of "postgres", "mongo", or "redis"
+    username: "username"
+    # Password in the case of "postgres", "mongo", or "redis"
+    password: "password"
+
 # Settings for how clients are authenticated
 # This is the default configuration, and should be modified
 # to suit your needs.
 authorization:
   # Whether or not skyline should enable authorization
   enabled: true
-  # Database options for authorization
-  database:
-      # Valid strategies include:
-      # - "local" (for testing, not recommended for production)
-      # - "redis" (default)
-      # - "mongo"
-      # - "postgres"
-      provider: "redis"
-      # If the strategy is "local", this is the path to the local file
-      host: "file://server/credentials.env"
-      # Port of the strategy
-      port: 6379
-      # Auth of the strategy (if any)
-      # Username in the case of "postgres", "mongo", or "redis"
-      username: "username"
-      # Password in the case of "postgres", "mongo", or "redis"
-      password: "password"
   # Token Type is the type of token to use for authorization
   # Valid types include:
   # - "skyline" (default)
@@ -55,6 +67,17 @@ network:
   # The maximum number of connections to allow
   # 0 means unlimited
   maxConnections: 0
+  # Cache options for the server
+  cache:
+    # The maximum number of messages to cache
+    # 0 means unlimited
+    maxMessages: 0
+    # The maximum number of channels to cache
+    # 0 means unlimited
+    maxChannels: 0
+    # The maximum time to live for a message in the cache (in seconds)
+    # 0 means unlimited
+    ttl: 60
 
 # Channel settings
 channels:
@@ -66,13 +89,10 @@ channels:
   maxClients: 0
   # The default channel to join when connecting
   default: "public"
-  # User defined channels that have no service attached to them
-  userDefined:
+  # A list of channel names to disallow
+  # You can set a specifier to disallow all channels that match a pattern
+  # To modify public channels, edit `channels.json`
+  deny:
     # This is a test channel
     # This channel has it's own api and does not accept raw messages
-    - name: "test"
-      # Api options for this channel
-      api:
-        # Enforce the skyline api mode.
-        enforce: true
-        
+    - name: "skyline"

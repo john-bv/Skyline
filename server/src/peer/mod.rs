@@ -11,7 +11,7 @@ use crate::net::ConnAdapter;
 /// This is a struct responsible for dispatching between clients and getting information like
 /// the amount of clients connected, and db stuff.
 pub struct PeerManager {
-    peers: HashMap<PeerId, Peer>,
+    peers: HashMap<PeerId, Arc<Peer>>,
 }
 
 impl PeerManager {
@@ -21,7 +21,7 @@ impl PeerManager {
         }
     }
 
-    pub async fn add_peer(&mut self, peer: Peer) -> Result<(), &'static str> {
+    pub async fn add_peer(&mut self, peer: Arc<Peer>) -> Result<(), &'static str> {
         if self.peers.contains_key(&peer.id) {
             let _ = peer
                 .close(protocol::skyline::connection::DisconnectReason::Conflict)
@@ -33,8 +33,9 @@ impl PeerManager {
         Ok(())
     }
 
-    pub fn remove_peer(&mut self, peer: Peer) {
+    pub fn remove_peer(&mut self, peer: Arc<Peer>) {
         // when a peer is removed, we should close the connection
+        // todo: determine whether or not we should await the close
         let _ = tokio::runtime::Handle::current().block_on(
             peer.inner
                 .close(protocol::skyline::connection::DisconnectReason::Closed),
@@ -52,8 +53,12 @@ impl PeerManager {
         id + 1
     }
 
-    pub fn dispatch(&mut self, packet: &SkylinePacket) {
-        panic!("Not implemented")
+    /// Dispatches a packet to all peers
+    /// This is a blocking call, and should be called from a tokio task.
+    pub async fn dispatch(&mut self, packet: &SkylinePacket) {
+        for peer in self.peers.values() {
+            let _ = peer.send_raw(packet).await;
+        }
     }
 }
 
@@ -88,10 +93,25 @@ impl Peer {
     }
 
     pub async fn init(inner: Arc<dyn ConnAdapter>, closer: Arc<Notify>, id: PeerId) -> Self {
-        Self {
+        let x = Self {
             inner,
-            closer,
+            closer: closer.clone(),
             id: 0,
-        }
+        };
+
+        x.listen_for_close(closer).await;
+
+        x
+    }
+
+    async fn listen_for_close(&self, closer: Arc<Notify>) {
+        let inner = self.inner.clone();
+        tokio::task::spawn(async move {
+            loop {
+                closer.notified().await;
+                let _ = inner.close(protocol::skyline::connection::DisconnectReason::Closed).await;
+                break;
+            }
+        });
     }
 }

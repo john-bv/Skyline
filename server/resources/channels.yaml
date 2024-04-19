@@ -1,0 +1,51 @@
+public:
+    # The maximum number of clients to allow per channel
+    # 0 means unlimited
+    maxClients: 0
+    # The maximum number of messages to cache
+    # 0 means unlimited
+    maxMessages: 0
+    # The maximum time to live for a message in the cache (in seconds)
+    # 0 means unlimited
+    ttl: 60
+    # No API for this channel, forced to use binary messages
+    api: false
+
+# this is an example of a public channel with a custom API
+# this does not require a service, but all clients must use the same API
+public-hello:
+    # The maximum number of clients to allow per channel
+    # 0 means unlimited
+    maxClients: 0
+    # The maximum number of messages to cache
+    # 0 means unlimited
+    maxMessages: 0
+    # The maximum time to live for a message in the cache (in seconds)
+    # 0 means unlimited
+    ttl: 60
+    # No API for this channel, forced to use binary messages
+    api:
+        types:
+            Client:
+                fields:
+                    - name: "name"
+                      type: "string"
+                    - name: "id"
+                      type: "varu32"
+                typeId: 0 # you can override this, but by default, it's 0 and increments for each type
+            Message:
+                fields:
+                    - name: "message"
+                      type: "string"
+                    - name: "id"
+                      type: "varu32"
+                typeId: 1
+        packets:
+            - name: "GetClient"
+              fields:
+                  - name: "id"
+                    type: "varu32"
+            - name: "GetClientResponse"
+              fields:
+                  - name: "client"
+                    type: "Client"

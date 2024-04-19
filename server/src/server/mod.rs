@@ -43,7 +43,7 @@ impl Server {
                         crate::net::tcp::TcpListener::new(bind_address.as_str()).await?,
                     )))
                 }
-                // NetworkMode::Udp => Box::new(crate::net::udp::UdpListener::new(address)?),
+                // NetworkMode::Udp => Arc::new(Box::new(crate::net::udp::UdpListener::new(address)?)),
                 _ => {
                     log_error!(
                         "Unsupported network mode: {}, attempting to start anyway...",
@@ -86,7 +86,7 @@ impl Server {
         let net_interface = self.interface.clone();
         tokio::task::spawn(async move {
             loop {
-                let mut interface = net_interface.lock().await;
+                let interface = net_interface.lock().await;
                 tokio::select! {
                     _ = close_notifier.notified() => {
                         log_notice!("Closing...");
@@ -109,7 +109,7 @@ impl Server {
                         let manager = peer_manager.clone();
                         let mut manager = manager.lock().await;
                         let next_id = manager.get_next_id();
-                        let peer = Peer::init(conn, closer, 0).await;
+                        let peer = Arc::new(Peer::init(conn, closer, next_id).await);
 
                         if let Err(_) = manager.add_peer(peer).await {
                             log_error!("Failed to add peer to manager.");

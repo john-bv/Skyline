@@ -1,6 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DashboardOpts {
+    pub enabled: bool,
+    pub port: u16,
+    pub username: String,
+    // default password.
+    pub password: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ClusterOpts {
     pub enabled: bool,
     #[serde(rename(serialize = "allowUnverified", deserialize = "allowUnverified"))]
@@ -34,6 +43,8 @@ pub struct DbOpts {
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum DbStrategy {
+    #[serde(rename = "mysql")]
+    Mysql,
     #[serde(rename = "postgres")]
     Postgres,
     #[serde(rename = "local")]
