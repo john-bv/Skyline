@@ -378,6 +378,7 @@ impl Conn {
         }
     }
 
+    #[allow(dead_code)]
     async fn send_raw(
         socket: &Arc<tokio::net::TcpStream>,
         splits: &mut HashMap<u16, (SystemTime, Vec<SplitPacket>)>,
@@ -520,6 +521,9 @@ impl ConnAdapter for Conn {
         ));
     }
 
+    fn get_state(&self) -> ConnState {
+        self.state
+    }
     fn get_addr(&self) -> SocketAddr {
         self.addr
     }

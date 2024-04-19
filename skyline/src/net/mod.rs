@@ -52,6 +52,8 @@ pub trait ConnAdapter: Send + Sync {
     /// YOU CAN SEND ANYTHING HERE, SO BE CAREFUL.
     /// It is strongly discouraged to use this, and you should not have to use this.
     async fn send_raw(&self, data: &[u8]) -> std::io::Result<()>;
+    /// Gets the current state of the connection.
+    fn get_state(&self) -> ConnState;
     /// This will get the address of the connection.
     /// While not required, it is recommended to use this as the address of the connection.
     fn get_addr(&self) -> SocketAddr;

@@ -4,104 +4,91 @@ use std::{
     collections::HashMap,
     sync::{Arc, Mutex, RwLock},
 };
-use tokio::sync::Notify;
+use tokio::{sync::Notify, task::JoinHandle};
 
 use crate::net::ConnAdapter;
 
-/// This is a struct responsible for dispatching between clients and getting information like
-/// the amount of clients connected, and db stuff.
-pub struct PeerManager {
-    peers: HashMap<PeerId, Arc<Peer>>,
+pub enum PeerState {
+    /// The peer is connected, and is ready to recieve packets.
+    Connected,
+    /// the Peer is timing out, because it has not been sent a packet or has not sent a packet.
+    /// This will cause the peer to close.
+    TimingOut,
+    /// The peer is disconnected, and being discarded. This is the final state of the peer before it
+    /// is removed from the peer manager.
+    Disconnected,
 }
 
-impl PeerManager {
-    pub fn new() -> Self {
-        Self {
-            peers: HashMap::new(),
+impl PeerState {
+    fn is_connected(&self) -> bool {
+        match self {
+            PeerState::Connected | PeerState::TimingOut => true,
+            _ => false,
         }
     }
 
-    pub async fn add_peer(&mut self, peer: Arc<Peer>) -> Result<(), &'static str> {
-        if self.peers.contains_key(&peer.id) {
-            let _ = peer
-                .close(protocol::skyline::connection::DisconnectReason::Conflict)
-                .await;
-            return Err("Peer already exists");
+    /// The logic here may be confusing, for TCP, all connections are considered
+    /// reliable because it is handled within protocol, however for UDP, we need to
+    /// check if the connection is reliable.
+    ///
+    /// So when using this in TCP mode, you will get UDP like behavior.
+    fn is_reliable(&self) -> bool {
+        match self {
+            PeerState::Connected => true,
+            _ => false,
         }
-
-        self.peers.insert(peer.id, peer);
-        Ok(())
-    }
-
-    pub fn remove_peer(&mut self, peer: Arc<Peer>) {
-        // when a peer is removed, we should close the connection
-        // todo: determine whether or not we should await the close
-        let _ = tokio::runtime::Handle::current().block_on(
-            peer.inner
-                .close(protocol::skyline::connection::DisconnectReason::Closed),
-        );
-        self.peers.remove(&peer.id);
-    }
-
-    pub fn get_next_id(&self) -> PeerId {
-        let mut id = 0;
-        for peer in &self.peers {
-            if peer.1.id > id {
-                id = peer.1.id;
-            }
-        }
-        id + 1
-    }
-
-    /// Dispatches a packet to all peers
-    /// This is a blocking call, and should be called from a tokio task.
-    pub async fn dispatch(&mut self, packet: &SkylinePacket) {
-        for peer in self.peers.values() {
-            let _ = peer.send_raw(packet).await;
-        }
-    }
-}
-
-impl Iterator for PeerManager {
-    type Item = Peer;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        panic!("Not implemented")
     }
 }
 
 pub type PeerId = usize;
 
 pub struct Peer {
+    pub state: Arc<Mutex<PeerState>>,
     inner: Arc<dyn ConnAdapter>,
     closer: Arc<Notify>,
-    id: PeerId,
+    id: Arc<Mutex<PeerId>>,
+    tasks: Arc<Mutex<Vec<JoinHandle<()>>>>,
 }
 
 impl Peer {
+    pub async fn new(
+        inner: Arc<dyn ConnAdapter>,
+        closer: Arc<Notify>,
+        id: PeerId,
+    ) -> Self {
+        let p = Self {
+            state: Arc::new(Mutex::new(PeerState::Connected)),
+            inner,
+            closer: closer.clone(),
+            id: Arc::new(Mutex::new(id)),
+            tasks: Arc::new(Mutex::new(Vec::new()))
+        };
+
+        p.listen_for_close(closer).await;
+
+        let tk = p.tasks.clone();
+        let mut tasks = tk.lock().unwrap();
+
+        // initailize the tasks, we need to listen for network traffic
+        // and we also need to tick to make sure the connection is still alive
+        return p;
+    }
+
+    /// Closes the peer connection.
     pub async fn close(
         &self,
         reason: protocol::skyline::connection::DisconnectReason,
     ) -> std::io::Result<()> {
         self.inner.close(reason).await?;
+        self.closer.notify_waiters();
         Ok(())
     }
 
+    /// Forwards a packet to the connection adapter.
+    /// This will block until the packet is sent.
     pub async fn send_raw(&self, packet: &SkylinePacket) -> std::io::Result<()> {
         self.inner.send(packet).await?;
         Ok(())
-    }
-
-    pub async fn init(inner: Arc<dyn ConnAdapter>, closer: Arc<Notify>, id: PeerId) -> Self {
-        let x = Self {
-            inner,
-            closer: closer.clone(),
-            id: 0,
-        };
-
-        x.listen_for_close(closer).await;
-
-        x
     }
 
     async fn listen_for_close(&self, closer: Arc<Notify>) {
